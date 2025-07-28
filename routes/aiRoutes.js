@@ -23,6 +23,7 @@ const {
   getMessagesByType,
   deleteMessage,
   getMessageStats,
+  interactWithAgent,
 } = require("../controllers/aiController");
 
 // ========== ORIGINAL ROUTES ==========
@@ -50,6 +51,9 @@ router.post("/rewrite-text", rewriteText);
 router.get("/messages/type/:type", getMessagesByType);
 router.delete("/messages/:id", deleteMessage);
 router.get("/stats", getMessageStats);
+
+
+router.post('/agent', interactWithAgent);
 
 // ========== HEALTH CHECK ROUTE ==========
 router.get("/health", (req, res) => {
