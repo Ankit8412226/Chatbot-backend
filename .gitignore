@@ -1,0 +1,69 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependency directories
+node_modules/
+
+# Build output
+dist/
+build/
+out/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.*.local
+
+# Editor directories and files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Testing coverage
+coverage/
+
+# Next.js
+.next/
+
+# Nuxt.js
+.nuxt/
+
+# Parcel
+.cache/
+
+# Svelte
+.svelte-kit/
+
+# Storybook
+.storybook-out/
+
+# Misc
+*.local
+*.lock
+*.tgz
+
+# Optional npm cache directory
+.npm/
+
+# eslint cache
+.eslintcache
+
+# TypeScript
+*.tsbuildinfo
+
+# React Native
+android/
+ios/
+*.keystore
+*.gradle
+
+# Git
+.git/
