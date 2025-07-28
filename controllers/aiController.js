@@ -40,6 +40,27 @@ const callSambaNova = async (prompt, maxTokens = 1000, temperature = 0.7) => {
   return data.choices[0].message.content;
 };
 
+const interactWithAgent = async (req, res) => {
+  try {
+    const { message } = req.body;
+
+    if (!message || message.trim() === "") {
+      return res.status(400).json({ error: "Message is required" });
+    }
+
+    const prompt = `You are a helpful assistant. Please respond to the following message:\n\n${message}`;
+
+    const response = await callSambaNova(prompt);
+
+    res.status(200).json({ reply: response });
+  } catch (error) {
+    console.error("Error in interactWithAgent:", error.message);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};
+
+
+
 // Generate Email
 const generateEmail = async (req, res) => {
   const { purpose, details, tone } = req.body;
@@ -470,4 +491,5 @@ module.exports = {
   getMessagesByType,
   deleteMessage,
   getMessageStats,
+  interactWithAgent
 };
