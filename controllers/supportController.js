@@ -1080,5 +1080,6 @@ module.exports = {
   DIGITAL_SERVICES,
   detectServiceType,
   buildEnhancedContext,
-  generateUniversalResponse
+  generateUniversalResponse,
+  analyzeUniversalTicket
 };

@@ -386,6 +386,34 @@ class RealTimeService {
   }
 
   // Public methods for external use
+  notifyTransferRequest(transferId, transferData) {
+    // Notify the target agent
+    const agentWs = this.agentConnections.get(transferData.assignedAgent.id);
+    if (agentWs && agentWs.readyState === WebSocket.OPEN) {
+      agentWs.send(JSON.stringify({
+        type: 'transfer_request',
+        transferId,
+        sessionId: transferData.sessionId,
+        customerName: transferData.customerName,
+        serviceType: transferData.serviceType,
+        priority: transferData.priority,
+        context: transferData.context,
+        timestamp: new Date().toISOString()
+      }));
+    }
+
+    // Notify customer about transfer
+    const customerWs = this.customerConnections.get(transferData.sessionId);
+    if (customerWs && customerWs.readyState === WebSocket.OPEN) {
+      customerWs.send(JSON.stringify({
+        type: 'transfer_initiated',
+        message: `You're being connected to a human agent who specializes in ${transferData.serviceType.replace('_', ' ')}. Please hold on for just a moment! 👋`,
+        estimatedWaitTime: transferData.estimatedWaitTime,
+        timestamp: new Date().toISOString()
+      }));
+    }
+  }
+
   notifyTransferAccepted(transferId, sessionId, agentData) {
     const customerWs = this.customerConnections.get(sessionId);
     if (customerWs && customerWs.readyState === WebSocket.OPEN) {

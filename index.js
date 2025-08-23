@@ -12,6 +12,9 @@ app.use(cors());
 // Middleware
 app.use(express.json());
 
+// Serve static files
+app.use(express.static('public'));
+
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))
@@ -25,6 +28,11 @@ app.get("/api/test", (req, res) => {
     success: true,
     message: "🚀 Backend is running fine!"
   });
+});
+
+// Agent dashboard route
+app.get("/agent-dashboard", (req, res) => {
+  res.sendFile(__dirname + '/public/agent-dashboard.html');
 });
 
 

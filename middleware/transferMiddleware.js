@@ -119,14 +119,17 @@ They'll be able to provide you with the detailed, personalized assistance you ne
               assignedAgentId: transfer.assignedAgent.id
             });
 
-            // Notify via WebSocket
-            realTimeService.notifyTransferRequest(transfer.transferId, {
-              sessionId,
-              customerName: ticket.name,
-              serviceType: ticket.serviceType,
-              priority: isComplex ? 'high' : 'medium',
-              estimatedWaitTime: transfer.estimatedWaitTime
-            });
+            // Notify via WebSocket (if method exists)
+            if (typeof realTimeService.notifyTransferRequest === 'function') {
+              realTimeService.notifyTransferRequest(transfer.transferId, {
+                sessionId,
+                customerName: ticket.name,
+                serviceType: ticket.serviceType,
+                priority: isComplex ? 'high' : 'medium',
+                estimatedWaitTime: transfer.estimatedWaitTime,
+                assignedAgent: transfer.assignedAgent
+              });
+            }
 
             return res.status(200).json({
               sessionId,
@@ -175,8 +178,10 @@ Let me tackle this challenge for you right now - what specifically would you lik
       // Continue with AI response (normal flow)
       const { generateUniversalResponse, analyzeUniversalTicket } = require('../controllers/supportController');
 
-      // Analyze and update ticket
-      await analyzeUniversalTicket(ticket, message);
+      // Analyze and update ticket (if function exists)
+      if (typeof analyzeUniversalTicket === 'function') {
+        await analyzeUniversalTicket(ticket, message);
+      }
 
       // Generate AI response
       const response = await generateUniversalResponse(ticket, message);

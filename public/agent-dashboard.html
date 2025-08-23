@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Dashboard - Support System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .agent-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .agent-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #3498db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+
+        .status-indicator {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-online {
+            background: #27ae60;
+            color: white;
+        }
+
+        .status-busy {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            min-height: 600px;
+        }
+
+        .sidebar {
+            background: #f8f9fa;
+            padding: 20px;
+            border-right: 1px solid #e9ecef;
+        }
+
+        .stats-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .stats-card h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 8px 0;
+            border-bottom: 1px solid #f1f1f1;
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .chat-area {
+            padding: 20px;
+        }
+
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .chat-header h2 {
+            color: #2c3e50;
+            font-size: 20px;
+        }
+
+        .chat-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .chat-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .chat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .chat-card.active {
+            border-color: #3498db;
+            background: #f8f9ff;
+        }
+
+        .chat-header-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .customer-name {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+
+        .chat-time {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+
+        .chat-preview {
+            color: #5a6c7d;
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 10px;
+        }
+
+        .chat-meta {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .service-tag {
+            background: #3498db;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .priority-high {
+            background: #e74c3c;
+        }
+
+        .priority-medium {
+            background: #f39c12;
+        }
+
+        .priority-low {
+            background: #27ae60;
+        }
+
+        .no-chats {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+
+        .no-chats h3 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .transfer-notification {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .transfer-notification.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                border-right: none;
+                border-bottom: 1px solid #e9ecef;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Agent Dashboard</h1>
+            <div class="agent-info">
+                <div class="agent-avatar" id="agentAvatar">A</div>
+                <div>
+                    <div id="agentName">Agent Name</div>
+                    <div class="status-indicator status-online" id="agentStatus">Online</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="transfer-notification" id="transferNotification">
+            <strong>New Transfer Request!</strong> You have a new customer waiting to be connected.
+        </div>
+
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="stats-card">
+                    <h3>Today's Stats</h3>
+                    <div class="stat-item">
+                        <span>Active Chats</span>
+                        <span class="stat-value" id="activeChats">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Total Handled</span>
+                        <span class="stat-value" id="totalHandled">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Avg Response Time</span>
+                        <span class="stat-value" id="avgResponse">0s</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Satisfaction</span>
+                        <span class="stat-value" id="satisfaction">0%</span>
+                    </div>
+                </div>
+
+                <div class="stats-card">
+                    <h3>Quick Actions</h3>
+                    <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="toggleStatus()">
+                        Toggle Status
+                    </button>
+                    <button class="btn btn-success" style="width: 100%; margin-bottom: 10px;" onclick="refreshChats()">
+                        Refresh Chats
+                    </button>
+                    <button class="btn btn-danger" style="width: 100%;" onclick="logout()">
+                        Logout
+                    </button>
+                </div>
+            </div>
+
+            <div class="chat-area">
+                <div class="chat-header">
+                    <h2>Active Conversations</h2>
+                    <div id="chatCount">0 chats</div>
+                </div>
+
+                <div class="chat-list" id="chatList">
+                    <div class="no-chats">
+                        <h3>No active chats</h3>
+                        <p>You're all caught up! New customer requests will appear here.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock data for demonstration
+        let agentData = {
+            id: 'AG001',
+            name: 'Sarah Johnson',
+            status: 'online',
+            activeChats: 0,
+            totalHandled: 0,
+            avgResponseTime: 0,
+            satisfaction: 0
+        };
+
+        let activeChats = [];
+
+        // Initialize dashboard
+        function initDashboard() {
+            updateAgentInfo();
+            updateStats();
+            loadActiveChats();
+
+            // Simulate real-time updates
+            setInterval(updateStats, 30000); // Update every 30 seconds
+            setInterval(checkForTransfers, 10000); // Check for transfers every 10 seconds
+        }
+
+        function updateAgentInfo() {
+            document.getElementById('agentName').textContent = agentData.name;
+            document.getElementById('agentAvatar').textContent = agentData.name.charAt(0);
+            document.getElementById('agentStatus').textContent = agentData.status;
+            document.getElementById('agentStatus').className = `status-indicator status-${agentData.status}`;
+        }
+
+        function updateStats() {
+            document.getElementById('activeChats').textContent = agentData.activeChats;
+            document.getElementById('totalHandled').textContent = agentData.totalHandled;
+            document.getElementById('avgResponse').textContent = `${agentData.avgResponseTime}s`;
+            document.getElementById('satisfaction').textContent = `${agentData.satisfaction}%`;
+        }
+
+        function loadActiveChats() {
+            const chatList = document.getElementById('chatList');
+            const chatCount = document.getElementById('chatCount');
+
+            if (activeChats.length === 0) {
+                chatList.innerHTML = `
+                    <div class="no-chats">
+                        <h3>No active chats</h3>
+                        <p>You're all caught up! New customer requests will appear here.</p>
+                    </div>
+                `;
+                chatCount.textContent = '0 chats';
+                return;
+            }
+
+            chatList.innerHTML = activeChats.map(chat => `
+                <div class="chat-card" onclick="openChat('${chat.sessionId}')">
+                    <div class="chat-header-info">
+                        <div class="customer-name">${chat.customerName}</div>
+                        <div class="chat-time">${formatTime(chat.lastMessageTime)}</div>
+                    </div>
+                    <div class="chat-preview">${chat.lastMessage}</div>
+                    <div class="chat-meta">
+                        <span class="service-tag">${chat.serviceType.replace('_', ' ')}</span>
+                        <span class="service-tag priority-${chat.priority}">${chat.priority}</span>
+                    </div>
+                </div>
+            `).join('');
+
+            chatCount.textContent = `${activeChats.length} chat${activeChats.length !== 1 ? 's' : ''}`;
+        }
+
+        function openChat(sessionId) {
+            // In a real implementation, this would open a chat interface
+            alert(`Opening chat session: ${sessionId}`);
+        }
+
+        function toggleStatus() {
+            agentData.status = agentData.status === 'online' ? 'busy' : 'online';
+            updateAgentInfo();
+
+            // In a real implementation, this would update the server
+            console.log(`Agent status changed to: ${agentData.status}`);
+        }
+
+        function refreshChats() {
+            // Simulate loading new chats
+            console.log('Refreshing chats...');
+            loadActiveChats();
+        }
+
+        function checkForTransfers() {
+            // Simulate checking for new transfer requests
+            const hasNewTransfer = Math.random() < 0.1; // 10% chance of new transfer
+
+            if (hasNewTransfer) {
+                showTransferNotification();
+            }
+        }
+
+        function showTransferNotification() {
+            const notification = document.getElementById('transferNotification');
+            notification.classList.add('show');
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                // In a real implementation, this would clear session and redirect
+                alert('Logged out successfully');
+            }
+        }
+
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+
+            if (diff < 60000) return 'Just now';
+            if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+            if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+            return date.toLocaleDateString();
+        }
+
+        // Simulate receiving a new chat
+        function simulateNewChat() {
+            const newChat = {
+                sessionId: 'session_' + Date.now(),
+                customerName: 'Customer ' + Math.floor(Math.random() * 1000),
+                serviceType: ['web_development', 'mobile_development', 'digital_marketing'][Math.floor(Math.random() * 3)],
+                priority: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)],
+                lastMessage: 'Hello, I need help with my project...',
+                lastMessageTime: new Date().toISOString()
+            };
+
+            activeChats.unshift(newChat);
+            agentData.activeChats = activeChats.length;
+
+            updateStats();
+            loadActiveChats();
+            showTransferNotification();
+        }
+
+        // Initialize dashboard when page loads
+        document.addEventListener('DOMContentLoaded', initDashboard);
+
+        // Demo: Simulate new chat every 30 seconds (for testing)
+        setInterval(simulateNewChat, 30000);
+    </script>
+</body>
+</html>

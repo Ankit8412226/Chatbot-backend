@@ -15,6 +15,8 @@ const {
   detectServiceType
 } = require('../controllers/supportController');
 
+// Import enhanced support controller for human agent handoff
+const enhancedSupportController = require('../middleware/transferMiddleware');
 
 
 // Rate limiting configurations
@@ -170,7 +172,7 @@ router.post('/start-session', supportRateLimit, startSupportSession);
  * @desc    Continue conversation with the universal digital solutions agent
  * @access  Public (with chat rate limiting)
  */
-router.post('/continue-chat',  continueSupportChat);
+router.post('/continue-chat', chatRateLimit, enhancedSupportController.continueSupportChat);
 
 /**
  * @route   GET /api/support/session/:sessionId
@@ -624,6 +626,116 @@ router.post('/webhook/external', async (req, res) => {
   } catch (error) {
     console.error('Webhook error:', error);
     res.status(400).json({ error: 'Webhook processing failed' });
+  }
+});
+
+// ============================================================================
+// HUMAN AGENT HANDOFF ROUTES
+// ============================================================================
+
+/**
+ * @route   POST /api/support/agent/response
+ * @desc    Handle human agent response to customer
+ * @access  Agent only
+ */
+router.post('/agent/response', adminRateLimit, enhancedSupportController.handleAgentResponse);
+
+/**
+ * @route   GET /api/support/human-availability
+ * @desc    Check human agent availability and estimated wait times
+ * @access  Public
+ */
+router.get('/human-availability', supportRateLimit, enhancedSupportController.getHumanSupportAvailability);
+
+/**
+ * @route   POST /api/support/request-human
+ * @desc    Explicitly request human agent assistance
+ * @access  Public
+ */
+router.post('/request-human', supportRateLimit, async (req, res) => {
+  try {
+    const { sessionId, reason, priority } = req.body;
+
+    if (!sessionId) {
+      return res.status(400).json({ error: 'Session ID is required' });
+    }
+
+    const SupportTicket = require('../models/supportTicketSchema');
+    const ticket = await SupportTicket.findActiveSession(sessionId);
+
+    if (!ticket) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    // Force escalation to human agent
+    const Agent = require('../models/agentSchema');
+    const availableAgents = await Agent.findAvailableAgents(ticket.serviceType);
+
+    if (availableAgents.length > 0) {
+      const AgentService = require('../services/agentService');
+      const transfer = await AgentService.requestTransfer(sessionId, {
+        reason: 'customer_request',
+        serviceType: ticket.serviceType,
+        priority: priority || 'medium',
+        fromType: 'ai',
+        context: {
+          summary: 'Customer explicitly requested human assistance',
+          customerIssue: reason || 'Customer wants to speak with human agent',
+          urgencyLevel: priority || 'medium',
+          aiConfidence: 0.1,
+          complexity: 'customer_preference'
+        }
+      });
+
+      const escalationMessage = `I understand you'd like to speak with a human agent! I've connected you with ${transfer.assignedAgent.name} from our ${transfer.assignedAgent.department} team. They'll be with you in about ${Math.ceil(transfer.estimatedWaitTime / 60)} minutes.
+
+In the meantime, feel free to share any additional details about what you need help with! 👋`;
+
+      await ticket.addMessage('assistant', escalationMessage, {
+        isEscalation: true,
+        transferId: transfer.transferId,
+        assignedAgentId: transfer.assignedAgent.id
+      });
+
+      return res.status(200).json({
+        sessionId,
+        message: escalationMessage,
+        escalated: true,
+        transferId: transfer.transferId,
+        assignedAgent: transfer.assignedAgent,
+        estimatedWaitTime: `${Math.ceil(transfer.estimatedWaitTime / 60)} minutes`,
+        stage: 'pending_human_agent',
+        status: 'transferring'
+      });
+
+    } else {
+      const queueMessage = `I'd love to connect you with one of our human agents, but they're all currently helping other customers.
+
+However, I'm equipped with advanced capabilities and can provide expert-level assistance! What specific challenge are you facing? I'll make sure to give you the detailed help you need, and I'll flag this as high priority for when an agent becomes available. 🌟`;
+
+      await ticket.addMessage('assistant', queueMessage, {
+        priority: 'high',
+        escalationRequested: true,
+        queuePosition: 'next_available'
+      });
+
+      return res.status(200).json({
+        sessionId,
+        message: queueMessage,
+        escalated: false,
+        queued: true,
+        priority: 'high',
+        stage: 'ai_priority_assistance',
+        humanAgentsAvailable: false
+      });
+    }
+
+  } catch (error) {
+    console.error('Human request error:', error);
+    res.status(500).json({
+      error: 'Failed to request human agent',
+      message: error.message
+    });
   }
 });
 
