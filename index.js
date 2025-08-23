@@ -17,8 +17,7 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))
   .catch(err => console.error("❌ MongoDB error", err));
 
-// Routes
-const aiRoutes = require("./routes/aiRoutes");
+
 const chatbot = require("./routes/supportRoutes");
 // Test route
 app.get("/api/test", (req, res) => {
@@ -29,7 +28,7 @@ app.get("/api/test", (req, res) => {
 });
 
 
-app.use("/api/ai", aiRoutes);
+
 app.use("/api/v1/support", chatbot);
 
 const PORT = process.env.PORT || 5000;
