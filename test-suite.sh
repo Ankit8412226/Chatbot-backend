@@ -54,8 +54,8 @@ run_json_test() {
 
 # Check if server is running
 echo "🔍 Checking if server is running..."
-if ! curl -s http://localhost:5000/api/test > /dev/null; then
-    echo -e "${RED}❌ Server is not running. Please start with: npm run dev${NC}"
+if ! curl -s https://ai-agent-frontend-qpx8.onrender.com/api/test > /dev/null; then
+    echo -e "${RED}❌ Server is not running. Please check your hosted backend${NC}"
     exit 1
 fi
 echo -e "${GREEN}✅ Server is running${NC}"
@@ -67,17 +67,17 @@ echo "======================"
 # Test 1: Company Registration
 run_json_test \
     "Company Registration" \
-    "curl -s -X POST http://localhost:5000/api/v1/company/register -H 'Content-Type: application/json' -d '{\"name\":\"Test Company\",\"email\":\"admin@testcompany.com\",\"adminName\":\"John Admin\",\"adminEmail\":\"john@testcompany.com\",\"adminPassword\":\"testpass123\",\"industry\":\"technology\"}'" \
+    "curl -s -X POST https://ai-agent-frontend-qpx8.onrender.com/api/v1/company/register -H 'Content-Type: application/json' -d '{\"name\":\"Test Company\",\"email\":\"admin@testcompany.com\",\"adminName\":\"John Admin\",\"adminEmail\":\"john@testcompany.com\",\"adminPassword\":\"testpass123\",\"industry\":\"technology\"}'" \
     "Company registered successfully"
 
 # Test 2: Company Login
 run_json_test \
     "Company Login" \
-    "curl -s -X POST http://localhost:5000/api/v1/company/login -H 'Content-Type: application/json' -d '{\"email\":\"john@testcompany.com\",\"password\":\"testpass123\"}'" \
+    "curl -s -X POST https://ai-agent-frontend-qpx8.onrender.com/api/v1/company/login -H 'Content-Type: application/json' -d '{\"email\":\"john@testcompany.com\",\"password\":\"testpass123\"}'" \
     "Login successful"
 
 # Get token for subsequent tests
-TOKEN=$(curl -s -X POST http://localhost:5000/api/v1/company/login \
+TOKEN=$(curl -s -X POST https://ai-agent-frontend-qpx8.onrender.com/api/v1/company/login \
     -H "Content-Type: application/json" \
     -d '{"email":"john@testcompany.com","password":"testpass123"}' | \
     grep -o '"token":"[^"]*"' | cut -d'"' -f4)
@@ -90,19 +90,19 @@ fi
 # Test 3: Dashboard Access
 run_json_test \
     "Dashboard Access" \
-    "curl -s -X GET http://localhost:5000/api/v1/company/dashboard -H 'Authorization: Bearer $TOKEN'" \
+    "curl -s -X GET https://ai-agent-frontend-qpx8.onrender.com/api/v1/company/dashboard -H 'Authorization: Bearer $TOKEN'" \
     "company"
 
 # Test 4: Add Agent
 run_json_test \
     "Add Agent" \
-    "curl -s -X POST http://localhost:5000/api/v1/agents -H 'Content-Type: application/json' -H 'Authorization: Bearer $TOKEN' -d '{\"name\":\"Sarah Agent\",\"email\":\"sarah@testcompany.com\",\"password\":\"agentpass123\",\"department\":\"technical\"}'" \
+    "curl -s -X POST https://ai-agent-frontend-qpx8.onrender.com/api/v1/agents -H 'Content-Type: application/json' -H 'Authorization: Bearer $TOKEN' -d '{\"name\":\"Sarah Agent\",\"email\":\"sarah@testcompany.com\",\"password\":\"agentpass123\",\"department\":\"technical\"}'" \
     "Agent created successfully"
 
 # Test 5: List Agents
 run_json_test \
     "List Agents" \
-    "curl -s -X GET http://localhost:5000/api/v1/agents -H 'Authorization: Bearer $TOKEN'" \
+    "curl -s -X GET https://ai-agent-frontend-qpx8.onrender.com/api/v1/agents -H 'Authorization: Bearer $TOKEN'" \
     "agents"
 
 # Test 6: Generate API Key

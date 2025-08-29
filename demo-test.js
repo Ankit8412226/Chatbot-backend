@@ -9,7 +9,7 @@ const https = require('https');
 const http = require('http');
 
 // Configuration
-const BASE_URL = 'http://localhost:5000';
+const BASE_URL = 'https://ai-agent-frontend-qpx8.onrender.com';
 const timestamp = Date.now();
 const TEST_COMPANY = {
     name: `Demo Company ${timestamp}`,
