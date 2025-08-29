@@ -33,6 +33,14 @@ class AgentService {
         throw new Error('Invalid credentials');
       }
 
+      // Check if agent's company has active subscription
+      const Company = require('../models/companySchema');
+      const company = await Company.findById(agent.companyId);
+
+      if (!company || !company.isSubscriptionActive()) {
+        throw new Error('Company subscription is not active');
+      }
+
       // Update last activity and login history
       agent.lastActivity = new Date();
       agent.loginHistory.push({
@@ -44,6 +52,12 @@ class AgentService {
       // Keep only last 50 login records
       if (agent.loginHistory.length > 50) {
         agent.loginHistory = agent.loginHistory.slice(-50);
+      }
+
+      // Ensure agent is online and available on login
+      if (agent.status !== 'online' || !agent.isAvailable) {
+        agent.status = 'online';
+        agent.isAvailable = true;
       }
 
       await agent.save();
@@ -140,8 +154,27 @@ class AgentService {
 
       await transfer.save();
 
-      // Notify the agent (in a real system, you'd use WebSocket/push notification)
-      await this.notifyAgentOfTransfer(selectedAgent._id, transfer);
+      // Notify the agent in real-time if WS is available
+      try {
+        const realTimeService = require('./realTimeService');
+        if (typeof realTimeService.notifyTransferRequest === 'function') {
+          realTimeService.notifyTransferRequest(transfer.transferId, {
+            sessionId,
+            customerName: ticket.name,
+            serviceType,
+            priority,
+            estimatedWaitTime: this.calculateEstimatedWaitTime(selectedAgent),
+            assignedAgent: {
+              id: selectedAgent._id,
+              name: selectedAgent.name,
+              department: selectedAgent.department
+            }
+          });
+        }
+      } catch (e) {
+        // fallback: console log if WS not initialized
+        console.log('Real-time notifyTransferRequest unavailable:', e.message);
+      }
 
       return {
         transferId: transfer.transferId,
@@ -205,7 +238,21 @@ class AgentService {
           agentName: agent.name,
           transferId: transfer.transferId
         });
+
+        // Ensure ticket state persists
+        await ticket.save();
       }
+
+      // Notify customer that transfer was accepted
+      try {
+        const realTimeService = require('./realTimeService');
+        if (typeof realTimeService.notifyTransferAccepted === 'function') {
+          realTimeService.notifyTransferAccepted(transfer.transferId, transfer.sessionId, {
+            name: agent.name,
+            department: agent.department
+          });
+        }
+      } catch (e) {}
 
       return {
         success: true,
@@ -260,7 +307,24 @@ class AgentService {
         });
 
         await newTransfer.save();
-        await this.notifyAgentOfTransfer(alternativeAgents[0]._id, newTransfer);
+        // Notify the next agent via WS if available
+        try {
+          const realTimeService = require('./realTimeService');
+          if (typeof realTimeService.notifyTransferRequest === 'function') {
+            realTimeService.notifyTransferRequest(newTransfer.transferId, {
+              sessionId: newTransfer.sessionId,
+              customerName: transfer.customerName,
+              serviceType: transfer.serviceType,
+              priority: transfer.priority,
+              estimatedWaitTime: this.calculateEstimatedWaitTime(alternativeAgents[0]),
+              assignedAgent: {
+                id: alternativeAgents[0]._id,
+                name: alternativeAgents[0].name,
+                department: alternativeAgents[0].department
+              }
+            });
+          }
+        } catch (e) {}
 
         return { rerouted: true, newTransferId: newTransfer.transferId };
       } else {
@@ -481,6 +545,9 @@ class AgentService {
   static async getAllAgents(filters = {}) {
     try {
       const query = {};
+
+      // Add company filter if provided
+      if (filters.companyId) query.companyId = filters.companyId;
 
       if (filters.status) query.status = filters.status;
       if (filters.department) query.department = filters.department;

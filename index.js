@@ -22,6 +22,9 @@ mongoose.connect(process.env.MONGO_URI)
 
 
 const chatbot = require("./routes/supportRoutes");
+const agentRoutes = require("./routes/agentRoutes");
+const companyRoutes = require("./routes/companyRoutes");
+
 // Test route
 app.get("/api/test", (req, res) => {
   res.json({
@@ -35,9 +38,22 @@ app.get("/agent-dashboard", (req, res) => {
   res.sendFile(__dirname + '/public/agent-dashboard.html');
 });
 
-
+// Company dashboard route
+app.get("/dashboard", (req, res) => {
+  res.sendFile(__dirname + '/public/dashboard.html');
+});
 
 app.use("/api/v1/support", chatbot);
+app.use("/api/v1/company", companyRoutes);
+app.use("/api/v1/agents", agentRoutes);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+const server = app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
+// Initialize WebSocket server
+try {
+  const realTimeService = require('./services/realTimeService');
+  realTimeService.initialize(server);
+} catch (e) {
+  console.error('Failed to initialize WebSocket service:', e);
+}

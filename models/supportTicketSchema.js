@@ -1,6 +1,13 @@
 const mongoose = require("mongoose");
 
 const supportTicketSchema = new mongoose.Schema({
+  // Company Association
+  companyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company',
+    required: true
+  },
+
   // User Information
   name: {
     type: String,
@@ -29,14 +36,32 @@ const supportTicketSchema = new mongoose.Schema({
   // Service Type
   serviceType: {
     type: String,
-    enum: ['web_development', 'app_development', 'general_support', 'consultation' ,'general_inquiry'],
+    enum: [
+      'web_development',
+      'mobile_development',
+      'digital_marketing',
+      'cloud_solutions',
+      'data_analytics',
+      'cybersecurity',
+      'ui_ux_design',
+      'consulting',
+      'general_support',
+      'general_inquiry'
+    ],
     default: 'general_support'
   },
 
   // Current Stage of Support
   currentStage: {
     type: String,
-    enum: ['collecting_details', 'identifying_needs', 'providing_solutions', 'completed'],
+    enum: [
+      'collecting_details',
+      'identifying_needs',
+      'providing_solutions',
+      'pending_human_agent',
+      'human_agent',
+      'completed'
+    ],
     default: 'collecting_details'
   },
 
@@ -44,7 +69,7 @@ const supportTicketSchema = new mongoose.Schema({
   conversationHistory: [{
     role: {
       type: String,
-      enum: ['user', 'assistant'],
+      enum: ['user', 'assistant', 'agent', 'system'],
       required: true
     },
     message: {
@@ -105,10 +130,10 @@ const supportTicketSchema = new mongoose.Schema({
 });
 
 // Index for efficient queries
-supportTicketSchema.index({ sessionId: 1 });
-supportTicketSchema.index({ email: 1 });
-supportTicketSchema.index({ status: 1 });
-supportTicketSchema.index({ createdAt: -1 });
+supportTicketSchema.index({ companyId: 1, sessionId: 1 });
+supportTicketSchema.index({ companyId: 1, email: 1 });
+supportTicketSchema.index({ companyId: 1, status: 1 });
+supportTicketSchema.index({ companyId: 1, createdAt: -1 });
 
 // Method to add message to conversation history
 supportTicketSchema.methods.addMessage = function(role, message) {

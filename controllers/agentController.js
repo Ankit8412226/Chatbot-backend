@@ -272,7 +272,7 @@ const sendAgentMessage = async (req, res) => {
       });
     }
 
-    if (ticket.assignedAgentId.toString() !== agentId) {
+    if (!ticket.assignedAgentId || ticket.assignedAgentId.toString() !== agentId) {
       return res.status(403).json({
         error: 'Not assigned to this session'
       });
@@ -287,6 +287,24 @@ const sendAgentMessage = async (req, res) => {
 
     ticket.updatedAt = new Date();
     await ticket.save();
+
+    // Notify customer via WebSocket if connected
+    try {
+      const realTimeService = require('../services/realTimeService');
+      const customerWs = realTimeService.customerConnections.get(sessionId);
+      if (customerWs && customerWs.readyState === 1) {
+        customerWs.send(JSON.stringify({
+          type: 'agent_message',
+          sessionId,
+          message: message.trim(),
+          messageType: messageType || 'text',
+          agentName: agent.name,
+          timestamp: new Date().toISOString()
+        }));
+      }
+    } catch (e) {
+      // Non-fatal if WS not available
+    }
 
     res.status(200).json({
       message: 'Message sent successfully',
@@ -318,7 +336,7 @@ const endAgentSession = async (req, res) => {
     const ticket = await SupportTicket.findOne({ sessionId });
     const agent = await Agent.findById(agentId);
 
-    if (!ticket || ticket.assignedAgentId.toString() !== agentId) {
+    if (!ticket || !ticket.assignedAgentId || ticket.assignedAgentId.toString() !== agentId) {
       return res.status(403).json({
         error: 'Not authorized for this session'
       });
@@ -365,6 +383,7 @@ const endAgentSession = async (req, res) => {
 const createAgent = async (req, res) => {
   try {
     const agentData = req.body;
+    const { companyId } = req.company || req.agent;
 
     // Basic validation
     const required = ['name', 'email', 'password', 'department'];
@@ -377,7 +396,25 @@ const createAgent = async (req, res) => {
       });
     }
 
+    // Check if company can add more agents
+    const Company = require('../models/companySchema');
+    const company = await Company.findById(companyId);
+
+    if (!company.canAddAgent()) {
+      return res.status(403).json({
+        error: 'Agent limit reached for your subscription plan',
+        current: company.usage.agents,
+        limit: company.limits.agents
+      });
+    }
+
+    // Add company ID to agent data
+    agentData.companyId = companyId;
+
     const agent = await AgentService.createAgent(agentData);
+
+    // Increment agent usage
+    await company.incrementUsage('agents');
 
     res.status(201).json({
       message: 'Agent created successfully',
@@ -396,8 +433,9 @@ const createAgent = async (req, res) => {
 const getAllAgents = async (req, res) => {
   try {
     const { status, department, isAvailable } = req.query;
+    const { companyId } = req.company || req.agent;
 
-    const filters = {};
+    const filters = { companyId };
     if (status) filters.status = status;
     if (department) filters.department = department;
     if (isAvailable !== undefined) filters.isAvailable = isAvailable === 'true';

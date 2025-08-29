@@ -16,11 +16,17 @@ const agentSkillSchema = new mongoose.Schema({
 });
 
 const agentSchema = new mongoose.Schema({
+  // Company Association
+  companyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company',
+    required: true
+  },
+
   // Basic Information
   employeeId: {
     type: String,
-    required: true,
-    unique: true
+    required: true
   },
   name: {
     type: String,
@@ -28,8 +34,7 @@ const agentSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: true,
-    unique: true
+    required: true
   },
   password: {
     type: String,
@@ -274,10 +279,11 @@ agentSchema.statics.getPerformanceStats = function(agentId, days = 30) {
 };
 
 // Indexes for performance
-agentSchema.index({ status: 1, isAvailable: 1 });
+agentSchema.index({ companyId: 1, status: 1 });
+agentSchema.index({ companyId: 1, isAvailable: 1 });
 agentSchema.index({ 'skills.service': 1 });
-agentSchema.index({ employeeId: 1 }, { unique: true });
-agentSchema.index({ email: 1 }, { unique: true });
+agentSchema.index({ companyId: 1, employeeId: 1 }, { unique: true });
+agentSchema.index({ companyId: 1, email: 1 }, { unique: true });
 agentSchema.index({ department: 1, status: 1 });
 
 module.exports = mongoose.model('Agent', agentSchema);
