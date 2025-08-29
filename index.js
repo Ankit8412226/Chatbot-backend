@@ -43,6 +43,11 @@ app.get("/dashboard", (req, res) => {
   res.sendFile(__dirname + '/public/dashboard.html');
 });
 
+// Integration example route
+app.get("/integration-example", (req, res) => {
+  res.sendFile(__dirname + '/public/integration-example.html');
+});
+
 app.use("/api/v1/support", chatbot);
 app.use("/api/v1/company", companyRoutes);
 app.use("/api/v1/agents", agentRoutes);
