@@ -38,6 +38,11 @@ app.get("/agent-dashboard", (req, res) => {
   res.sendFile(__dirname + '/public/agent-dashboard.html');
 });
 
+// Main landing page route
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + '/public/index.html');
+});
+
 // Company dashboard route
 app.get("/dashboard", (req, res) => {
   res.sendFile(__dirname + '/public/dashboard.html');
