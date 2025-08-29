@@ -23,9 +23,9 @@ run_test() {
     local test_name="$1"
     local test_command="$2"
     local expected_pattern="$3"
-    
+
     echo -n "Testing: $test_name... "
-    
+
     if eval "$test_command" 2>/dev/null | grep -q "$expected_pattern"; then
         echo -e "${GREEN}✅ PASS${NC}"
         ((PASSED++))
@@ -40,9 +40,9 @@ run_json_test() {
     local test_name="$1"
     local test_command="$2"
     local expected_field="$3"
-    
+
     echo -n "Testing: $test_name... "
-    
+
     if eval "$test_command" 2>/dev/null | grep -q "$expected_field"; then
         echo -e "${GREEN}✅ PASS${NC}"
         ((PASSED++))
