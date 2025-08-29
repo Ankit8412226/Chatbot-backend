@@ -516,7 +516,7 @@ What digital challenge can I help you conquer today? I'm excited to hear about y
 // Start support session
 const startSupportSession = async (req, res) => {
   try {
-    const { name, email, phoneNumber } = req.body;
+    const { name, email, phoneNumber, companyId } = req.body;
 
     if (!name || !email || !phoneNumber) {
       return res.status(400).json({
@@ -531,7 +531,11 @@ const startSupportSession = async (req, res) => {
 
     const sessionId = uuidv4();
 
+    // Use provided companyId or default demo company for testing
+    const defaultCompanyId = companyId || '68b1fb97189b4f1582379f48'; // Support Demo Company
+
     const supportTicket = new SupportTicket({
+      companyId: defaultCompanyId,
       name: name.trim(),
       email: email.trim(),
       phoneNumber: phoneNumber.trim(),

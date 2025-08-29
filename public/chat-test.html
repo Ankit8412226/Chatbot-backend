@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Widget Test - AI Agent Writer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-center mb-8">🤖 Chat Widget Test</h1>
+
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4">Testing Instructions</h2>
+            <ol class="list-decimal list-inside space-y-2 text-gray-700">
+                <li>Look for the chat button in the bottom-right corner</li>
+                <li>Click on the chat button to open the chat widget</li>
+                <li>Enter your name and email when prompted</li>
+                <li>Type a message and press Enter</li>
+                <li>You should receive an AI response</li>
+            </ol>
+        </div>
+
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-8">
+            <strong>✅ Status:</strong> Chat widget is loaded and ready for testing!
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="font-semibold mb-3">API Configuration</h3>
+                <div class="text-sm space-y-1">
+                    <div><strong>API Key:</strong> <span class="text-green-600">sk_68b1fa79189b4f1582379f0c_1756494465876_rgn3kts9e</span></div>
+                    <div><strong>Domain:</strong> <span class="text-blue-600">https://ai-agent-frontend-qpx8.onrender.com</span></div>
+                    <div><strong>Company:</strong> AI Agent Writer Support</div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="font-semibold mb-3">Expected Behavior</h3>
+                <ul class="text-sm space-y-1 text-gray-700">
+                    <li>• Chat button appears in bottom-right</li>
+                    <li>• Clicking opens chat window</li>
+                    <li>• Customer info prompt appears</li>
+                    <li>• Messages send successfully</li>
+                    <li>• AI responds with helpful message</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="mt-8 text-center">
+            <a href="/" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                ← Back to Main Page
+            </a>
+        </div>
+    </div>
+
+    <!-- Chat Widget Configuration -->
+    <script>
+        window.AI_CHAT_CONFIG = {
+            apiKey: 'sk_68b1fa79189b4f1582379f0c_1756494465876_rgn3kts9e',
+            domain: 'https://ai-agent-frontend-qpx8.onrender.com',
+            companyName: 'AI Agent Writer Support',
+            position: 'bottom-right',
+            theme: 'blue'
+        };
+    </script>
+
+    <!-- Include the chat widget script -->
+    <script src="https://ai-agent-frontend-qpx8.onrender.com/chat-widget.js"></script>
+</body>
+</html>

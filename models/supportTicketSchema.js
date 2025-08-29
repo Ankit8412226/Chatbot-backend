@@ -5,7 +5,8 @@ const supportTicketSchema = new mongoose.Schema({
   companyId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company',
-    required: true
+    required: false, // Made optional for demo purposes
+    default: '68b1fb97189b4f1582379f48' // Default demo company
   },
 
   // User Information

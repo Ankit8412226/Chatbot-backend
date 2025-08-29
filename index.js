@@ -53,6 +53,16 @@ app.get("/integration-example", (req, res) => {
   res.sendFile(__dirname + '/public/integration-example.html');
 });
 
+// Chat test route
+app.get("/chat-test", (req, res) => {
+  res.sendFile(__dirname + '/public/chat-test.html');
+});
+
+// Support test route
+app.get("/support-test", (req, res) => {
+  res.sendFile(__dirname + '/public/support-test.html');
+});
+
 app.use("/api/v1/support", chatbot);
 app.use("/api/v1/company", companyRoutes);
 app.use("/api/v1/agents", agentRoutes);

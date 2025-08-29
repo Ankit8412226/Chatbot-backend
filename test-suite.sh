@@ -106,7 +106,7 @@ run_json_test \
     "agents"
 
 # Test 6: Generate API Key
-API_KEY_RESPONSE=$(curl -s -X POST http://localhost:5000/api/v1/company/api-keys \
+API_KEY_RESPONSE=$(curl -s -X POST https://ai-agent-frontend-qpx8.onrender.com/api/v1/company/api-keys \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer $TOKEN" \
     -d '{"name":"Test API Key","permissions":["read","write"]}')
@@ -127,11 +127,11 @@ fi
 # Test 7: List API Keys
 run_json_test \
     "List API Keys" \
-    "curl -s -X GET http://localhost:5000/api/v1/company/api-keys -H 'Authorization: Bearer $TOKEN'" \
+    "curl -s -X GET https://ai-agent-frontend-qpx8.onrender.com/api/v1/company/api-keys -H 'Authorization: Bearer $TOKEN'" \
     "apiKeys"
 
 # Test 8: Start Chat Session
-CHAT_SESSION_RESPONSE=$(curl -s -X POST http://localhost:5000/api/v1/company/api/chat/start \
+CHAT_SESSION_RESPONSE=$(curl -s -X POST https://ai-agent-frontend-qpx8.onrender.com/api/v1/company/api/chat/start \
     -H "Content-Type: application/json" \
     -H "X-API-Key: $API_KEY" \
     -d '{"name":"Test Customer","email":"customer@example.com","phoneNumber":"+1234567890","serviceType":"general_support"}')
@@ -152,25 +152,25 @@ fi
 # Test 9: Send Message
 run_json_test \
     "Send Message" \
-    "curl -s -X POST http://localhost:5000/api/v1/company/api/chat/message -H 'Content-Type: application/json' -H 'X-API-Key: $API_KEY' -d '{\"sessionId\":\"$SESSION_ID\",\"message\":\"Hello, I need help\"}'" \
+    "curl -s -X POST https://ai-agent-frontend-qpx8.onrender.com/api/v1/company/api/chat/message -H 'Content-Type: application/json' -H 'X-API-Key: $API_KEY' -d '{\"sessionId\":\"$SESSION_ID\",\"message\":\"Hello, I need help\"}'" \
     "Message sent successfully"
 
 # Test 10: Get Chat Sessions
 run_json_test \
     "Get Chat Sessions" \
-    "curl -s -X GET 'http://localhost:5000/api/v1/company/api/chat/sessions?limit=10&offset=0' -H 'X-API-Key: $API_KEY'" \
+    "curl -s -X GET 'https://ai-agent-frontend-qpx8.onrender.com/api/v1/company/api/chat/sessions?limit=10&offset=0' -H 'X-API-Key: $API_KEY'" \
     "sessions"
 
 # Test 11: Get Analytics
 run_json_test \
     "Get Analytics" \
-    "curl -s -X GET 'http://localhost:5000/api/v1/company/api/analytics/overview?days=30' -H 'X-API-Key: $API_KEY'" \
+    "curl -s -X GET 'https://ai-agent-frontend-qpx8.onrender.com/api/v1/company/api/analytics/overview?days=30' -H 'X-API-Key: $API_KEY'" \
     "tickets"
 
 # Test 12: Get Subscription Plans
 run_json_test \
     "Get Subscription Plans" \
-    "curl -s -X GET http://localhost:5000/api/v1/company/plans" \
+    "curl -s -X GET https://ai-agent-frontend-qpx8.onrender.com/api/v1/company/plans" \
     "plans"
 
 echo ""
@@ -180,19 +180,19 @@ echo "============================"
 # Test 13: Invalid API Key
 run_test \
     "Invalid API Key Rejection" \
-    "curl -s -X GET http://localhost:5000/api/v1/company/api/chat/sessions -H 'X-API-Key: invalid_key' | grep -q '401\|Unauthorized\|Invalid API key'" \
+    "curl -s -X GET https://ai-agent-frontend-qpx8.onrender.com/api/v1/company/api/chat/sessions -H 'X-API-Key: invalid_key' | grep -q '401\|Unauthorized\|Invalid API key'" \
     ""
 
 # Test 14: Invalid Token
 run_test \
     "Invalid Token Rejection" \
-    "curl -s -X GET http://localhost:5000/api/v1/company/dashboard -H 'Authorization: Bearer invalid_token' | grep -q '401\|Unauthorized\|Invalid token'" \
+    "curl -s -X GET https://ai-agent-frontend-qpx8.onrender.com/api/v1/company/dashboard -H 'Authorization: Bearer invalid_token' | grep -q '401\|Unauthorized\|Invalid token'" \
     ""
 
 # Test 15: Missing Required Fields
 run_test \
     "Missing Required Fields Validation" \
-    "curl -s -X POST http://localhost:5000/api/v1/company/register -H 'Content-Type: application/json' -d '{\"name\":\"Test\"}' | grep -q '400\|Missing required fields'" \
+    "curl -s -X POST https://ai-agent-frontend-qpx8.onrender.com/api/v1/company/register -H 'Content-Type: application/json' -d '{\"name\":\"Test\"}' | grep -q '400\|Missing required fields'" \
     ""
 
 echo ""
@@ -202,31 +202,31 @@ echo "============================"
 # Test 16: Registration Page
 run_test \
     "Registration Page Loads" \
-    "curl -s http://localhost:5000/register.html | grep -q 'Create Company Account'" \
+    "curl -s https://ai-agent-frontend-qpx8.onrender.com/register.html | grep -q 'Create Company Account'" \
     ""
 
 # Test 17: Login Page
 run_test \
     "Login Page Loads" \
-    "curl -s http://localhost:5000/login.html | grep -q 'Sign in to your company account'" \
+    "curl -s https://ai-agent-frontend-qpx8.onrender.com/login.html | grep -q 'Sign in to your company account'" \
     ""
 
 # Test 18: Dashboard Page
 run_test \
     "Dashboard Page Loads" \
-    "curl -s http://localhost:5000/dashboard | grep -q 'AI Agent Writer - Dashboard'" \
+    "curl -s https://ai-agent-frontend-qpx8.onrender.com/dashboard | grep -q 'AI Agent Writer - Dashboard'" \
     ""
 
 # Test 19: Integration Example Page
 run_test \
     "Integration Example Page Loads" \
-    "curl -s http://localhost:5000/integration-example | grep -q 'Acme Corp'" \
+    "curl -s https://ai-agent-frontend-qpx8.onrender.com/integration-example | grep -q 'Acme Corp'" \
     ""
 
 # Test 20: Chat Widget Script
 run_test \
     "Chat Widget Script Loads" \
-    "curl -s http://localhost:5000/chat-widget.js | grep -q 'AIAgentChatWidget'" \
+    "curl -s https://ai-agent-frontend-qpx8.onrender.com/chat-widget.js | grep -q 'AIAgentChatWidget'" \
     ""
 
 echo ""
