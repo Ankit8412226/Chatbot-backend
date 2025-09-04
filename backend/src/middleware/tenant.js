@@ -1,5 +1,4 @@
 import ApiKey from '../models/ApiKey.js';
-import Tenant from '../models/Tenant.js';
 
 export const authenticateApiKey = async (req, res, next) => {
   try {
@@ -9,9 +8,9 @@ export const authenticateApiKey = async (req, res, next) => {
       return res.status(401).json({ error: 'API key required' });
     }
 
-    const keyDoc = await ApiKey.findOne({ 
-      key: apiKey, 
-      isActive: true 
+    const keyDoc = await ApiKey.findOne({
+      key: apiKey,
+      isActive: true
     }).populate('tenantId');
 
     if (!keyDoc) {
@@ -29,24 +28,24 @@ export const authenticateApiKey = async (req, res, next) => {
     // Check rate limiting
     const now = new Date();
     const windowStart = new Date(now.getTime() - (keyDoc.rateLimit.window * 1000));
-    
+
     // Simple in-memory rate limiting (use Redis in production)
     if (!req.app.locals.rateLimitStore) {
       req.app.locals.rateLimitStore = new Map();
     }
-    
+
     const store = req.app.locals.rateLimitStore;
     const keyRequests = store.get(apiKey) || [];
     const recentRequests = keyRequests.filter(time => time > windowStart);
-    
+
     if (recentRequests.length >= keyDoc.rateLimit.requests) {
-      return res.status(429).json({ 
+      return res.status(429).json({
         error: 'Rate limit exceeded',
         limit: keyDoc.rateLimit.requests,
         window: keyDoc.rateLimit.window
       });
     }
-    
+
     recentRequests.push(now);
     store.set(apiKey, recentRequests);
 
@@ -69,7 +68,7 @@ export const requirePermission = (permission) => {
     }
 
     if (!req.apiKey.hasPermission(permission)) {
-      return res.status(403).json({ 
+      return res.status(403).json({
         error: 'Insufficient permissions',
         required: permission,
         current: req.apiKey.permissions
@@ -88,7 +87,7 @@ export const checkUsageLimit = (feature) => {
       }
 
       if (!req.tenant.canUseFeature(feature)) {
-        return res.status(403).json({ 
+        return res.status(403).json({
           error: `${feature} limit exceeded`,
           current: req.tenant.usage[feature],
           limit: req.tenant.limits[feature]
@@ -105,7 +104,7 @@ export const checkUsageLimit = (feature) => {
 export const trackUsage = (feature) => {
   return async (req, res, next) => {
     const originalSend = res.json;
-    
+
     res.json = function(data) {
       // Track usage after successful response
       if (res.statusCode >= 200 && res.statusCode < 300 && req.tenant) {
@@ -113,10 +112,10 @@ export const trackUsage = (feature) => {
           console.error('Usage tracking error:', err);
         });
       }
-      
+
       return originalSend.call(this, data);
     };
-    
+
     next();
   };
 };

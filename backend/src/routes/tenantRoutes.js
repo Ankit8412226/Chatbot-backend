@@ -1,11 +1,10 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
-import { authenticateToken, requireRole } from '../middleware/auth.js';
-import Tenant from '../models/Tenant.js';
-import User from '../models/User.js';
 import Stripe from 'stripe';
 import { config } from '../config/env.js';
+import { authenticateToken, requireRole } from '../middleware/auth.js';
 import { requireActiveSubscription } from '../middleware/tenant.js';
+import User from '../models/User.js';
 
 const router = express.Router();
 
@@ -44,7 +43,7 @@ router.put('/settings', authenticateToken, requireRole(['owner', 'admin']), [
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Validation failed',
         details: errors.array()
       });
@@ -180,7 +179,7 @@ router.post('/team', authenticateToken, requireRole(['owner', 'admin']), [
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Validation failed',
         details: errors.array()
       });
@@ -197,7 +196,7 @@ router.post('/team', authenticateToken, requireRole(['owner', 'admin']), [
 
     // Check agent limit
     if (role === 'agent' && !req.tenant.canUseFeature('agents')) {
-      return res.status(403).json({ 
+      return res.status(403).json({
         error: 'Agent limit reached',
         current: req.tenant.usage.agents,
         limit: req.tenant.limits.agents
@@ -232,7 +231,7 @@ router.post('/team', authenticateToken, requireRole(['owner', 'admin']), [
 });
 
 export default router;
- 
+
 // Billing: create checkout session (Stripe)
 router.post('/billing/create-checkout-session', authenticateToken, requireRole(['owner']), async (req, res) => {
   try {
