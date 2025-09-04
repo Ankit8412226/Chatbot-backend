@@ -11,21 +11,26 @@ router.get('/', authenticateToken, async (req, res) => {
     const tenantId = req.tenant._id;
 
     const apiKeys = await ApiKey.find({ tenantId })
-      .select('-key') // Don't return the actual key
       .sort({ createdAt: -1 });
 
     res.json({
-      apiKeys: apiKeys.map(key => ({
-        id: key._id,
-        name: key.name,
-        permissions: key.permissions,
-        isActive: key.isActive,
-        lastUsed: key.lastUsed,
-        usageCount: key.usageCount,
-        createdAt: key.createdAt,
-        expiresAt: key.expiresAt,
-        maskedKey: `${key.key.substring(0, 12)}...${key.key.slice(-4)}`
-      }))
+      apiKeys: apiKeys.map(key => {
+        const raw = key.key || '';
+        const masked = raw && raw.length > 8
+          ? `${raw.substring(0, 12)}...${raw.slice(-4)}`
+          : '********';
+        return {
+          id: key._id,
+          name: key.name,
+          permissions: key.permissions,
+          isActive: key.isActive,
+          lastUsed: key.lastUsed,
+          usageCount: key.usageCount,
+          createdAt: key.createdAt,
+          expiresAt: key.expiresAt,
+          maskedKey: masked
+        };
+      })
     });
 
   } catch (error) {
@@ -44,7 +49,7 @@ router.post('/', authenticateToken, requireRole(['owner', 'admin']), [
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Validation failed',
         details: errors.array()
       });
@@ -98,7 +103,7 @@ router.put('/:keyId', authenticateToken, requireRole(['owner', 'admin']), [
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Validation failed',
         details: errors.array()
       });
@@ -109,7 +114,7 @@ router.put('/:keyId', authenticateToken, requireRole(['owner', 'admin']), [
     const tenantId = req.tenant._id;
 
     const apiKey = await ApiKey.findOne({ _id: keyId, tenantId });
-    
+
     if (!apiKey) {
       return res.status(404).json({ error: 'API key not found' });
     }
@@ -145,7 +150,7 @@ router.delete('/:keyId', authenticateToken, requireRole(['owner', 'admin']), asy
     const tenantId = req.tenant._id;
 
     const result = await ApiKey.deleteOne({ _id: keyId, tenantId });
-    
+
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'API key not found' });
     }
@@ -166,7 +171,7 @@ router.get('/:keyId/usage', authenticateToken, async (req, res) => {
     const tenantId = req.tenant._id;
 
     const apiKey = await ApiKey.findOne({ _id: keyId, tenantId });
-    
+
     if (!apiKey) {
       return res.status(404).json({ error: 'API key not found' });
     }

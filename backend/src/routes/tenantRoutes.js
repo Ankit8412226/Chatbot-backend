@@ -1,5 +1,6 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
+import mongoose from 'mongoose';
 import Stripe from 'stripe';
 import { config } from '../config/env.js';
 import { authenticateToken, requireRole } from '../middleware/auth.js';

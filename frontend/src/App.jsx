@@ -10,6 +10,7 @@ import ChatTester from './pages/ChatTester.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import HandoffCenter from './pages/HandoffCenter.jsx';
 import KnowledgeBase from './pages/KnowledgeBase.jsx';
+import Landing from './pages/Landing.jsx';
 import Login from './pages/Login.jsx';
 import PromptTuner from './pages/PromptTuner.jsx';
 import Signup from './pages/Signup.jsx';
@@ -22,9 +23,10 @@ function App() {
           {/* Public routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/" element={<Landing />} />
 
           {/* Protected routes */}
-          <Route path="/" element={
+          <Route path="/app" element={
             <ProtectedRoute>
               <div className="flex flex-col min-h-screen">
                 <Navbar />

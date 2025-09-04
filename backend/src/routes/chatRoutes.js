@@ -1,13 +1,13 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
 import { v4 as uuidv4 } from 'uuid';
-import { authenticateApiKey, requirePermission, checkUsageLimit, trackUsage } from '../middleware/tenant.js';
 import { authenticateToken } from '../middleware/auth.js';
+import { authenticateApiKey, checkUsageLimit, requirePermission, trackUsage } from '../middleware/tenant.js';
 import Conversation from '../models/Conversation.js';
 import Message from '../models/Message.js';
-import llmProvider from '../services/llmProvider.js';
 import embeddingService from '../services/embedding.js';
 import handoffService from '../services/handoff.js';
+import llmProvider from '../services/llmProvider.js';
 
 const router = express.Router();
 
@@ -20,7 +20,7 @@ router.post('/start', authenticateApiKey, requirePermission('chat:write'), check
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Validation failed',
         details: errors.array()
       });
@@ -43,7 +43,7 @@ router.post('/start', authenticateApiKey, requirePermission('chat:write'), check
 
     // Send welcome message
     const welcomeMessage = req.tenant.settings.chatWidget.welcomeMessage;
-    
+
     const message = new Message({
       conversationId: conversation._id,
       tenantId,
@@ -82,7 +82,7 @@ router.post('/message', authenticateApiKey, requirePermission('chat:write'), tra
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Validation failed',
         details: errors.array()
       });
@@ -92,8 +92,8 @@ router.post('/message', authenticateApiKey, requirePermission('chat:write'), tra
     const tenantId = req.tenant._id;
 
     // Find conversation
-    const conversation = await Conversation.findOne({ 
-      sessionId, 
+    const conversation = await Conversation.findOne({
+      sessionId,
       tenantId,
       status: { $in: ['active', 'transferred'] }
     });
@@ -145,7 +145,7 @@ router.post('/message', authenticateApiKey, requirePermission('chat:write'), tra
       'human', 'agent', 'person', 'representative', 'help', 'support'
     ];
 
-    const needsHandoff = handoffKeywords.some(keyword => 
+    const needsHandoff = handoffKeywords.some(keyword =>
       userMessage.toLowerCase().includes(keyword.toLowerCase())
     );
 
@@ -159,7 +159,7 @@ router.post('/message', authenticateApiKey, requirePermission('chat:write'), tra
 
         return res.json({
           sessionId,
-          message: handoffResult.status === 'assigned' 
+          message: handoffResult.status === 'assigned'
             ? `I'm connecting you with ${handoffResult.agent.name}. They'll be with you shortly!`
             : 'I\'m looking for an available agent to help you. Please hold on.',
           status: handoffResult.status,
@@ -177,7 +177,7 @@ router.post('/message', authenticateApiKey, requirePermission('chat:write'), tra
 
     // Get conversation history
     const recentMessages = await Message.getConversationHistory(conversation._id, 10);
-    
+
     // Search knowledge base
     const knowledgeResults = await embeddingService.findSimilarKnowledge(
       tenantId,
@@ -187,7 +187,7 @@ router.post('/message', authenticateApiKey, requirePermission('chat:write'), tra
 
     // Build context
     let contextPrompt = req.tenant.settings.ai.systemPrompt;
-    
+
     if (knowledgeResults.length > 0) {
       contextPrompt += '\n\nRelevant knowledge:\n';
       knowledgeResults.forEach(result => {
@@ -269,7 +269,7 @@ router.get('/:sessionId/history', authenticateApiKey, requirePermission('chat:re
     const tenantId = req.tenant._id;
 
     const conversation = await Conversation.findOne({ sessionId, tenantId });
-    
+
     if (!conversation) {
       return res.status(404).json({ error: 'Conversation not found' });
     }
@@ -308,7 +308,7 @@ router.post('/:sessionId/end', authenticateApiKey, requirePermission('chat:write
     const tenantId = req.tenant._id;
 
     const conversation = await Conversation.findOne({ sessionId, tenantId });
-    
+
     if (!conversation) {
       return res.status(404).json({ error: 'Conversation not found' });
     }
@@ -360,7 +360,7 @@ router.get('/conversations', authenticateToken, async (req, res) => {
     if (status) query.status = status;
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
-    
+
     const [conversations, total] = await Promise.all([
       Conversation.find(query)
         .populate('assignedAgent', 'name email')
@@ -406,7 +406,7 @@ router.post('/:sessionId/handoff', authenticateApiKey, requirePermission('chat:w
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Validation failed',
         details: errors.array()
       });
@@ -417,7 +417,7 @@ router.post('/:sessionId/handoff', authenticateApiKey, requirePermission('chat:w
     const tenantId = req.tenant._id;
 
     const conversation = await Conversation.findOne({ sessionId, tenantId });
-    
+
     if (!conversation) {
       return res.status(404).json({ error: 'Conversation not found' });
     }
@@ -437,6 +437,61 @@ router.post('/:sessionId/handoff', authenticateApiKey, requirePermission('chat:w
   } catch (error) {
     console.error('Request handoff error:', error);
     res.status(500).json({ error: 'Failed to request handoff' });
+  }
+});
+
+// Agent accepts handoff
+router.post('/:conversationId/agent/accept', authenticateToken, [
+  body('message').optional().trim()
+], async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    const agentId = req.user._id.toString();
+    const { message } = req.body;
+
+    const result = await handoffService.acceptHandoff(conversationId, agentId, message);
+    res.json({ success: true, ...result });
+  } catch (error) {
+    console.error('Agent accept handoff error:', error);
+    res.status(500).json({ error: 'Failed to accept handoff' });
+  }
+});
+
+// Agent sends message to customer
+router.post('/:conversationId/agent/message', authenticateToken, [
+  body('content').trim().isLength({ min: 1 })
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        error: 'Validation failed',
+        details: errors.array()
+      });
+    }
+
+    const { conversationId } = req.params;
+    const agentId = req.user._id.toString();
+    const { content } = req.body;
+
+    // Persist agent message
+    await handoffService.addAgentMessage(conversationId, agentId, content);
+
+    // Emit to conversation room
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`conversation-${conversationId}`).emit('new-message', {
+        role: 'agent',
+        content,
+        metadata: { userId: agentId, messageType: 'text' },
+        timestamp: new Date()
+      });
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Agent send message error:', error);
+    res.status(500).json({ error: 'Failed to send agent message' });
   }
 });
 

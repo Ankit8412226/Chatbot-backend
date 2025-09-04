@@ -1,5 +1,5 @@
-import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
   email: {
@@ -50,7 +50,7 @@ const userSchema = new mongoose.Schema({
 // Hash password before saving
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
-  
+
   try {
     const salt = await bcrypt.genSalt(12);
     this.password = await bcrypt.hash(this.password, salt);
@@ -73,7 +73,7 @@ userSchema.methods.toJSON = function() {
 };
 
 // Indexes
-userSchema.index({ email: 1 });
+// Note: do not duplicate the unique index on email defined above
 userSchema.index({ tenantId: 1 });
 userSchema.index({ tenantId: 1, role: 1 });
 

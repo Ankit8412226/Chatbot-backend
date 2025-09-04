@@ -9,6 +9,7 @@ const ChatTester = () => {
   const { tenant } = useAuth();
   const [apiKeys, setApiKeys] = useState([]);
   const [selectedApiKey, setSelectedApiKey] = useState('');
+  const [manualApiKey, setManualApiKey] = useState('');
   const [testConfig, setTestConfig] = useState({
     visitorName: 'Test User',
     visitorEmail: 'test@example.com',
@@ -118,6 +119,39 @@ const ChatTester = () => {
                     No active API keys found. Create one in the API Keys section.
                   </p>
                 )}
+
+                <p className="mt-2 text-xs text-gray-500">
+                  Select a key to view it, then paste the full key below.
+                </p>
+                <div className="mt-2 flex space-x-2">
+                  <input
+                    type="text"
+                    value={manualApiKey}
+                    onChange={(e) => setManualApiKey(e.target.value)}
+                    placeholder="Paste full API key (starts with sk_)"
+                    className="input-field flex-1"
+                  />
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const text = await navigator.clipboard.readText();
+                        setManualApiKey(text);
+                        toast.success('Pasted from clipboard');
+                      } catch (e) {
+                        toast.error('Clipboard read failed');
+                      }
+                    }}
+                    className="btn-secondary whitespace-nowrap"
+                  >
+                    Paste
+                  </button>
+                </div>
+                {manualApiKey && !/^sk_/.test(manualApiKey) && (
+                  <p className="mt-2 text-xs text-red-600">
+                    API key must start with <code>sk_</code>
+                  </p>
+                )}
               </div>
 
               <div>
@@ -205,11 +239,11 @@ const ChatTester = () => {
           <div className="card h-[600px] relative">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Live Chat Test</h3>
 
-            {selectedApiKey ? (
+            {manualApiKey ? (
               <div className="absolute inset-6 top-16">
                 <ChatWidget
                   key={chatKey}
-                  apiKey={selectedApiKey.replace(/\*/g, '')} // Remove masking for actual key
+                  apiKey={manualApiKey}
                   config={tenant?.settings?.chatWidget}
                   onMessage={handleMessage}
                   className="relative h-full"
@@ -219,9 +253,9 @@ const ChatTester = () => {
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">
                   <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h4 className="text-lg font-medium text-gray-900 mb-2">Select an API Key</h4>
+                  <h4 className="text-lg font-medium text-gray-900 mb-2">Paste an API Key</h4>
                   <p className="text-gray-600">
-                    Choose an API key from the configuration panel to start testing
+                    Choose a key and paste the full value above to start testing
                   </p>
                 </div>
               </div>

@@ -62,7 +62,8 @@ const ChatWidget = ({
 
     } catch (error) {
       console.error('Failed to start conversation:', error);
-      setError('Failed to connect. Please try again.');
+      const msg = error.response?.data?.error || error.message || 'Failed to connect. Please try again.';
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -111,13 +112,14 @@ const ChatWidget = ({
 
     } catch (error) {
       console.error('Failed to send message:', error);
-      setError('Failed to send message. Please try again.');
+      const msg = error.response?.data?.error || error.message || 'Failed to send message. Please try again.';
+      setError(msg);
       
       // Add error message
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
         role: 'system',
-        content: 'Sorry, I encountered an error. Please try again.',
+        content: `Sorry, I encountered an error: ${msg}`,
         timestamp: new Date(),
         isError: true
       }]);

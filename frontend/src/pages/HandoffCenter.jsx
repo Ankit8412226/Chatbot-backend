@@ -1,5 +1,6 @@
-import { AlertCircle, MessageSquare } from 'lucide-react';
+import { AlertCircle, MessageSquare, Send } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import Badge from '../components/Badge.jsx';
 import { chatAPI } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
@@ -42,9 +43,11 @@ const HandoffCenter = () => {
 
   const handleTakeConversation = async (conversationId) => {
     try {
-      // In a real implementation, this would assign the conversation to the current agent
-      toast.success('Conversation assigned to you');
-      await loadConversations();
+      const response = await chatAPI.agentAccept(conversationId, { message: null });
+      if (response.data?.success) {
+        toast.success('Conversation assigned to you');
+        await loadConversations();
+      }
     } catch (error) {
       console.error('Failed to take conversation:', error);
     }
@@ -241,18 +244,15 @@ const ConversationDetail = ({ conversation, onTakeConversation, onUpdate }) => {
     if (!newMessage.trim()) return;
 
     try {
-      // In a real implementation, this would send an agent message
-      const message = {
+      await chatAPI.agentMessage(conversation._id, { content: newMessage.trim() });
+      setMessages(prev => [...prev, {
         id: Date.now(),
         role: 'agent',
         content: newMessage.trim(),
         timestamp: new Date(),
         metadata: { userId: user._id }
-      };
-
-      setMessages(prev => [...prev, message]);
+      }]);
       setNewMessage('');
-      toast.success('Message sent');
     } catch (error) {
       console.error('Failed to send message:', error);
     }

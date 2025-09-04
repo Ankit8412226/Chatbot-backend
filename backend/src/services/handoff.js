@@ -1,17 +1,17 @@
-import User from '../models/User.js';
 import Conversation from '../models/Conversation.js';
-import Message from '../models/Message.js';
+import User from '../models/User.js';
 
 class HandoffService {
   constructor() {
     this.pendingHandoffs = new Map(); // conversationId -> handoff data
     this.agentQueues = new Map(); // tenantId -> agent queue
+    this.io = null; // injected Socket.IO instance
   }
 
   async requestHandoff(conversationId, reason, priority = 'medium', department = null) {
     try {
       const conversation = await Conversation.findById(conversationId).populate('tenantId');
-      
+
       if (!conversation) {
         throw new Error('Conversation not found');
       }
@@ -48,7 +48,7 @@ class HandoffService {
 
       // Assign to best available agent
       const selectedAgent = this.selectBestAgent(availableAgents, priority);
-      
+
       await conversation.assignToAgent(selectedAgent._id, {
         reason,
         priority,
@@ -72,7 +72,7 @@ class HandoffService {
       await this.addSystemMessage(
         conversationId,
         `You've been connected to ${selectedAgent.name}. They'll be with you shortly!`,
-        { 
+        {
           type: 'handoff_assigned',
           agentId: selectedAgent._id,
           agentName: selectedAgent.name
@@ -98,7 +98,7 @@ class HandoffService {
   async acceptHandoff(conversationId, agentId, message = null) {
     try {
       const conversation = await Conversation.findById(conversationId);
-      
+
       if (!conversation || conversation.assignedAgent?.toString() !== agentId) {
         throw new Error('Unauthorized or conversation not found');
       }
@@ -158,7 +158,7 @@ class HandoffService {
     // - Current workload
     // - Online status
     // - Working hours
-    
+
     return User.find(query).select('name email role preferences');
   }
 
@@ -168,13 +168,13 @@ class HandoffService {
     // - Expertise match
     // - Performance metrics
     // - Round-robin assignment
-    
+
     if (priority === 'urgent' || priority === 'high') {
       // Prefer admins for high priority
       const admins = agents.filter(agent => agent.role === 'admin');
       if (admins.length > 0) return admins[0];
     }
-    
+
     return agents[0];
   }
 
@@ -183,17 +183,17 @@ class HandoffService {
     // - Queue length
     // - Average handling time
     // - Agent availability
-    
+
     const queueLength = Array.from(this.pendingHandoffs.values())
       .filter(handoff => handoff.status === 'queued').length;
-    
+
     return `${Math.max(1, queueLength * 2)} minutes`;
   }
 
   async addSystemMessage(conversationId, content, metadata = {}) {
     const Message = (await import('../models/Message.js')).default;
     const conversation = await Conversation.findById(conversationId);
-    
+
     const message = new Message({
       conversationId,
       tenantId: conversation.tenantId,
@@ -212,7 +212,7 @@ class HandoffService {
   async addAgentMessage(conversationId, agentId, content, metadata = {}) {
     const Message = (await import('../models/Message.js')).default;
     const conversation = await Conversation.findById(conversationId);
-    
+
     const message = new Message({
       conversationId,
       tenantId: conversation.tenantId,
@@ -231,7 +231,7 @@ class HandoffService {
 
   async getRecentMessages(conversationId, limit = 10) {
     const Message = (await import('../models/Message.js')).default;
-    
+
     return Message.find({ conversationId })
       .sort({ createdAt: -1 })
       .limit(limit)
@@ -239,8 +239,11 @@ class HandoffService {
   }
 
   getSocketIO() {
-    // This would be injected or accessed from app context
-    return null; // Placeholder
+    return this.io;
+  }
+
+  setSocketIO(io) {
+    this.io = io;
   }
 
   // Queue management

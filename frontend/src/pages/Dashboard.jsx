@@ -8,6 +8,7 @@ import {
     TrendingUp
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Badge from '../components/Badge.jsx';
 import { chatAPI, tenantAPI } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
@@ -53,6 +54,11 @@ const Dashboard = () => {
     );
   }
 
+  const statusArray = analytics?.conversations?.statusBreakdown || [];
+  const activeCount = Array.isArray(statusArray)
+    ? statusArray.filter(s => s === 'active' || s === 'transferred').length
+    : 0;
+
   const stats = [
     {
       name: 'Total Conversations',
@@ -63,24 +69,24 @@ const Dashboard = () => {
     },
     {
       name: 'Active Chats',
-      value: analytics?.conversations?.activeTickets || 0,
+      value: activeCount,
       icon: Activity,
       color: 'text-green-600',
       bgColor: 'bg-green-100'
     },
     {
       name: 'Avg. Satisfaction',
-      value: analytics?.conversations?.averageSatisfaction
-        ? `${analytics.conversations.averageSatisfaction.toFixed(1)}/5`
+      value: typeof analytics?.conversations?.avgSatisfaction === 'number'
+        ? `${analytics.conversations.avgSatisfaction.toFixed(1)}/5`
         : 'N/A',
       icon: Star,
       color: 'text-yellow-600',
       bgColor: 'bg-yellow-100'
     },
     {
-      name: 'Response Time',
-      value: analytics?.conversations?.avgDuration
-        ? `${Math.round(analytics.conversations.avgDuration / 60)}m`
+      name: 'Avg. Duration',
+      value: typeof analytics?.conversations?.avgDuration === 'number'
+        ? `${Math.round((analytics.conversations.avgDuration || 0) / 60)}m`
         : 'N/A',
       icon: Clock,
       color: 'text-purple-600',
@@ -207,7 +213,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Recent Conversations */}
+        {/* Recent Conversations + Billing */}
         <div>
           <div className="card">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Conversations</h3>
@@ -246,6 +252,12 @@ const Dashboard = () => {
               </div>
             )}
           </div>
+          {/* Billing Card */}
+          <div className="card mt-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Billing</h3>
+            <p className="text-sm text-gray-600 mb-3">Manage your subscription</p>
+            <Link to="/subscribe" className="btn-primary inline-block">View plans</Link>
+          </div>
         </div>
       </div>
 
@@ -253,8 +265,8 @@ const Dashboard = () => {
       <div className="mt-8">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <a
-            href="/api-keys"
+          <Link
+            to="/api-keys"
             className="card hover:shadow-md transition-shadow cursor-pointer group"
           >
             <div className="flex items-center space-x-3">
@@ -266,10 +278,10 @@ const Dashboard = () => {
                 <p className="text-sm text-gray-500">Create and manage access</p>
               </div>
             </div>
-          </a>
+          </Link>
 
-          <a
-            href="/knowledge-base"
+          <Link
+            to="/knowledge-base"
             className="card hover:shadow-md transition-shadow cursor-pointer group"
           >
             <div className="flex items-center space-x-3">
@@ -281,10 +293,10 @@ const Dashboard = () => {
                 <p className="text-sm text-gray-500">Add Q&A content</p>
               </div>
             </div>
-          </a>
+          </Link>
 
-          <a
-            href="/prompt-tuner"
+          <Link
+            to="/prompt-tuner"
             className="card hover:shadow-md transition-shadow cursor-pointer group"
           >
             <div className="flex items-center space-x-3">
@@ -296,10 +308,10 @@ const Dashboard = () => {
                 <p className="text-sm text-gray-500">Customize AI behavior</p>
               </div>
             </div>
-          </a>
+          </Link>
 
-          <a
-            href="/chat-tester"
+          <Link
+            to="/chat-tester"
             className="card hover:shadow-md transition-shadow cursor-pointer group"
           >
             <div className="flex items-center space-x-3">
@@ -311,7 +323,7 @@ const Dashboard = () => {
                 <p className="text-sm text-gray-500">Try your chatbot</p>
               </div>
             </div>
-          </a>
+          </Link>
         </div>
       </div>
     </div>

@@ -1,7 +1,7 @@
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
 import compression from 'compression';
+import cors from 'cors';
+import express from 'express';
+import helmet from 'helmet';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { connectDB } from './config/db.js';
@@ -10,12 +10,13 @@ import { errorHandler } from './utils/error.js';
 import { globalRateLimit } from './utils/rateLimit.js';
 
 // Route imports
-import authRoutes from './routes/authRoutes.js';
-import tenantRoutes from './routes/tenantRoutes.js';
 import apiKeyRoutes from './routes/apiKeyRoutes.js';
-import kbRoutes from './routes/kbRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 import chatRoutes from './routes/chatRoutes.js';
+import kbRoutes from './routes/kbRoutes.js';
+import tenantRoutes from './routes/tenantRoutes.js';
 import webhookRoutes from './routes/webhookRoutes.js';
+import handoffService from './services/handoff.js';
 
 // Load environment variables
 loadEnv();
@@ -105,6 +106,8 @@ io.on('connection', (socket) => {
 
 // Make io available to routes
 app.set('io', io);
+// Inject io into services that need it
+handoffService.setSocketIO(io);
 
 // Error handling
 app.use(errorHandler);

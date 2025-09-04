@@ -47,8 +47,8 @@ const apiKeySchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Generate API key before saving
-apiKeySchema.pre('save', function(next) {
+// Generate API key before validation so 'required' passes
+apiKeySchema.pre('validate', function(next) {
   if (!this.key) {
     this.key = `sk_${this.tenantId}_${uuidv4().replace(/-/g, '')}`;
   }
@@ -71,7 +71,7 @@ apiKeySchema.methods.isExpired = function() {
 };
 
 // Indexes
-apiKeySchema.index({ key: 1 });
+// Avoid duplicating the unique index on key defined above
 apiKeySchema.index({ tenantId: 1 });
 apiKeySchema.index({ tenantId: 1, isActive: 1 });
 

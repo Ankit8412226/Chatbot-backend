@@ -19,6 +19,12 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     checkAuth();
+    const onUnauthorized = () => {
+      setUser(null);
+      setTenant(null);
+    };
+    window.addEventListener('unauthorized', onUnauthorized);
+    return () => window.removeEventListener('unauthorized', onUnauthorized);
   }, []);
 
   const checkAuth = async () => {

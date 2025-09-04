@@ -80,8 +80,8 @@ const tenantSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Generate slug from name
-tenantSchema.pre('save', function(next) {
+// Generate slug from name before validation so 'required' passes
+tenantSchema.pre('validate', function(next) {
   if (this.isModified('name') && !this.slug) {
     this.slug = this.name
       .toLowerCase()
@@ -107,7 +107,7 @@ tenantSchema.methods.incrementUsage = function(feature, amount = 1) {
 };
 
 // Indexes
-tenantSchema.index({ slug: 1 });
+// Avoid duplicating the unique index on slug defined above
 tenantSchema.index({ 'subscription.status': 1 });
 
 export default mongoose.model('Tenant', tenantSchema);

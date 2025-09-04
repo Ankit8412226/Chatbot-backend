@@ -107,8 +107,8 @@ conversationSchema.methods.addSatisfactionRating = function(rating, feedback = '
 
 // Static methods
 conversationSchema.statics.getActiveByTenant = function(tenantId) {
-  return this.find({ 
-    tenantId, 
+  return this.find({
+    tenantId,
     status: { $in: ['active', 'transferred'] }
   }).populate('assignedAgent', 'name email');
 };
@@ -116,7 +116,7 @@ conversationSchema.statics.getActiveByTenant = function(tenantId) {
 conversationSchema.statics.getAnalytics = function(tenantId, days = 30) {
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - days);
-  
+
   return this.aggregate([
     {
       $match: {
@@ -142,8 +142,8 @@ conversationSchema.statics.getAnalytics = function(tenantId, days = 30) {
 };
 
 // Indexes
+// Avoid duplicating the unique index on sessionId defined above
 conversationSchema.index({ tenantId: 1 });
-conversationSchema.index({ sessionId: 1 });
 conversationSchema.index({ tenantId: 1, status: 1 });
 conversationSchema.index({ tenantId: 1, createdAt: -1 });
 conversationSchema.index({ assignedAgent: 1, status: 1 });

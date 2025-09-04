@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 
 // Create axios instance
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL: '/api',
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json'
@@ -31,15 +31,16 @@ api.interceptors.response.use(
   },
   (error) => {
     const message = error.response?.data?.error || error.message || 'An error occurred';
-    
+
     if (error.response?.status === 401) {
       // Unauthorized - clear token and redirect to login
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      window.location.href = '/login';
+      // Notify app to clear auth state without full page reload
+      window.dispatchEvent(new Event('unauthorized'));
       return Promise.reject(error);
     }
-    
+
     if (error.response?.status === 403) {
       toast.error('Access denied: ' + message);
     } else if (error.response?.status === 429) {
@@ -49,7 +50,7 @@ api.interceptors.response.use(
     } else {
       toast.error(message);
     }
-    
+
     return Promise.reject(error);
   }
 );
@@ -92,27 +93,29 @@ export const chatAPI = {
   getConversations: (params = {}) => api.get('/chat/conversations', { params }),
   getHistory: (sessionId, limit = 50) => api.get(`/chat/${sessionId}/history?limit=${limit}`),
   endConversation: (sessionId, data) => api.post(`/chat/${sessionId}/end`, data),
-  requestHandoff: (sessionId, data) => api.post(`/chat/${sessionId}/handoff`, data)
+  requestHandoff: (sessionId, data) => api.post(`/chat/${sessionId}/handoff`, data),
+  agentAccept: (conversationId, data) => api.post(`/chat/${conversationId}/agent/accept`, data),
+  agentMessage: (conversationId, data) => api.post(`/chat/${conversationId}/agent/message`, data)
 };
 
 // Widget API (for external use)
 export const widgetAPI = {
-  start: (apiKey, data) => 
+  start: (apiKey, data) =>
     axios.post('/api/chat/start', data, {
       headers: { 'X-API-Key': apiKey }
     }),
-  
-  sendMessage: (apiKey, data) => 
+
+  sendMessage: (apiKey, data) =>
     axios.post('/api/chat/message', data, {
       headers: { 'X-API-Key': apiKey }
     }),
-  
-  getHistory: (apiKey, sessionId) => 
+
+  getHistory: (apiKey, sessionId) =>
     axios.get(`/api/chat/${sessionId}/history`, {
       headers: { 'X-API-Key': apiKey }
     }),
-  
-  endChat: (apiKey, sessionId, data) => 
+
+  endChat: (apiKey, sessionId, data) =>
     axios.post(`/api/chat/${sessionId}/end`, data, {
       headers: { 'X-API-Key': apiKey }
     })

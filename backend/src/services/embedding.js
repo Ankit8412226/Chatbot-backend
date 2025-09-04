@@ -7,7 +7,7 @@ class EmbeddingService {
   }
 
   async generateEmbedding(text) {
-    // Check cache first
+
     const cacheKey = this.hashText(text);
     if (this.cache.has(cacheKey)) {
       return this.cache.get(cacheKey);
@@ -15,14 +15,14 @@ class EmbeddingService {
 
     try {
       const embedding = await llmProvider.generateEmbedding(text);
-      
+
       // Cache the result
       if (this.cache.size >= this.maxCacheSize) {
         // Remove oldest entry
         const firstKey = this.cache.keys().next().value;
         this.cache.delete(firstKey);
       }
-      
+
       this.cache.set(cacheKey, embedding);
       return embedding;
     } catch (error) {
@@ -34,18 +34,18 @@ class EmbeddingService {
   async findSimilarKnowledge(tenantId, query, limit = 5) {
     try {
       const KBItem = (await import('../models/KBItem.js')).default;
-      
+
       // Generate embedding for the query
       const queryEmbedding = await this.generateEmbedding(query);
-      
+
       // Find similar knowledge items
       const similarItems = await KBItem.findSimilar(
-        tenantId, 
-        queryEmbedding, 
-        limit, 
+        tenantId,
+        queryEmbedding,
+        limit,
         0.7 // similarity threshold
       );
-      
+
       return similarItems;
     } catch (error) {
       console.error('Knowledge search error:', error);
@@ -57,10 +57,10 @@ class EmbeddingService {
     try {
       const text = `${kbItem.question} ${kbItem.answer}`;
       const embedding = await this.generateEmbedding(text);
-      
+
       kbItem.embedding = embedding;
       await kbItem.save();
-      
+
       return embedding;
     } catch (error) {
       console.error('Knowledge embedding update error:', error);

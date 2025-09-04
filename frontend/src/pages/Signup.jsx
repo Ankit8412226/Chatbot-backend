@@ -282,6 +282,9 @@ const Signup = () => {
                 Sign in here
               </Link>
             </p>
+            <p className="text-sm text-gray-500 mt-2">
+              <Link to="/" className="hover:underline">Back to landing</Link>
+            </p>
           </div>
         </form>
 

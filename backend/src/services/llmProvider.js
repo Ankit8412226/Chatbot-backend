@@ -29,8 +29,8 @@ class LLMProvider {
       // Add conversation history
       formattedMessages.push(...messages);
 
-      // If no API key in development, return a stub response
-      if (!this.apiKey) {
+      // If no API key or fetch unavailable (older Node), return a stub response
+      if (!this.apiKey || typeof fetch !== 'function') {
         return {
           content: '[stubbed LLM response] ' + (messages[messages.length - 1]?.content || ''),
           usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 },
@@ -68,8 +68,13 @@ class LLMProvider {
         finishReason: data.choices[0].finish_reason
       };
     } catch (error) {
-      console.error('LLM Provider error:', error);
-      throw new Error(`Failed to generate response: ${error.message}`);
+      console.warn('LLM Provider error, falling back to stub:', error.message);
+      return {
+        content: '[stubbed LLM response] ' + (messages[messages.length - 1]?.content || ''),
+        usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 },
+        model: this.defaultModel,
+        finishReason: 'stop'
+      };
     }
   }
 
