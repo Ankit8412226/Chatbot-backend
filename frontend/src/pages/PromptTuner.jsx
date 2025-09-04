@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../lib/auth.js';
-import { tenantAPI } from '../lib/api.js';
-import { Settings, Save, RotateCcw, Zap } from 'lucide-react';
+import { RotateCcw, Save, Settings, Zap } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { tenantAPI } from '../lib/api.js';
+import { useAuth } from '../lib/auth.jsx';
 
 const PromptTuner = () => {
   const { tenant, isAdmin } = useAuth();
@@ -97,8 +97,8 @@ IMPORTANT: Never provide medical advice. Always direct medical questions to qual
     },
     general: {
       name: 'General Support',
-      prompt: `You are a helpful customer support assistant. Be friendly, professional, and helpful. 
-Always try to understand the customer's needs and provide accurate information. 
+      prompt: `You are a helpful customer support assistant. Be friendly, professional, and helpful.
+Always try to understand the customer's needs and provide accurate information.
 If you cannot help with something, offer to connect them with a human agent.`
     }
   };
@@ -128,7 +128,7 @@ If you cannot help with something, offer to connect them with a human agent.`
             Customize your AI assistant's behavior and personality
           </p>
         </div>
-        
+
         {isAdmin && (
           <div className="flex items-center space-x-3">
             <button
@@ -138,7 +138,7 @@ If you cannot help with something, offer to connect them with a human agent.`
               <RotateCcw className="h-4 w-4" />
               <span>Reset</span>
             </button>
-            
+
             <button
               onClick={handleSave}
               disabled={saving}
@@ -162,7 +162,7 @@ If you cannot help with something, offer to connect them with a human agent.`
             <Zap className="h-5 w-5 mr-2 text-primary-600" />
             AI Configuration
           </h3>
-          
+
           <div className="space-y-6">
             {/* Preset Prompts */}
             <div>
@@ -280,7 +280,7 @@ If you cannot help with something, offer to connect them with a human agent.`
             <Settings className="h-5 w-5 mr-2 text-primary-600" />
             Chat Widget Settings
           </h3>
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
@@ -375,15 +375,15 @@ If you cannot help with something, offer to connect them with a human agent.`
             <div className="bg-gray-50 p-4 rounded-lg">
               <h4 className="text-sm font-medium text-gray-700 mb-3">Widget Preview</h4>
               <div className="relative bg-white border-2 border-gray-200 rounded-lg p-4 h-64">
-                <div 
+                <div
                   className="absolute bottom-4 right-4 w-12 h-12 rounded-full flex items-center justify-center text-white shadow-lg cursor-pointer"
                   style={{ backgroundColor: settings.chatWidget.primaryColor }}
                 >
                   💬
                 </div>
-                
+
                 <div className="absolute bottom-20 right-4 w-72 bg-white border border-gray-200 rounded-lg shadow-lg">
-                  <div 
+                  <div
                     className="p-3 text-white rounded-t-lg"
                     style={{ backgroundColor: settings.chatWidget.primaryColor }}
                   >
@@ -414,7 +414,7 @@ If you cannot help with something, offer to connect them with a human agent.`
         {/* Human Handoff Configuration */}
         <div className="card">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Human Handoff Settings</h3>
-          
+
           <div className="space-y-4">
             <div>
               <label className="flex items-center">
@@ -500,7 +500,7 @@ If you cannot help with something, offer to connect them with a human agent.`
         {/* Integration Code */}
         <div className="card">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Widget Integration Code</h3>
-          
+
           <div className="bg-gray-50 p-4 rounded-lg">
             <pre className="text-sm overflow-x-auto">
 {`<!-- Add this to your website -->
@@ -518,7 +518,7 @@ If you cannot help with something, offer to connect them with a human agent.`
 <script src="${window.location.origin}/widget.js"></script>`}
             </pre>
           </div>
-          
+
           <p className="mt-2 text-sm text-gray-500">
             Replace YOUR_API_KEY with an actual API key from the API Keys page.
           </p>

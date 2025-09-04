@@ -120,3 +120,32 @@ export const trackUsage = (feature) => {
     next();
   };
 };
+
+export const requireActiveSubscription = () => {
+  return (req, res, next) => {
+    try {
+      const tenant = req.tenant;
+      if (!tenant) {
+        return res.status(401).json({ error: 'Tenant context required' });
+      }
+
+      const status = tenant.subscription?.status || 'active';
+      const currentPeriodEnd = tenant.subscription?.currentPeriodEnd;
+
+      // Consider dev/no-DB mode as active
+      if (!tenant._id) return next();
+
+      if (status !== 'active') {
+        return res.status(402).json({ error: 'Subscription inactive', status });
+      }
+
+      if (currentPeriodEnd && new Date(currentPeriodEnd) < new Date()) {
+        return res.status(402).json({ error: 'Subscription expired' });
+      }
+
+      next();
+    } catch (error) {
+      return res.status(500).json({ error: 'Subscription check failed' });
+    }
+  };
+};

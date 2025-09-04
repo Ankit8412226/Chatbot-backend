@@ -5,7 +5,7 @@
   "type": "module",
   "main": "src/index.js",
   "scripts": {
-    "dev": "nodemon src/index.js",
+    "dev": "PORT=5001 nodemon src/index.js",
     "start": "node src/index.js"
   },
   "dependencies": {
@@ -21,7 +21,8 @@
     "socket.io": "^4.7.4",
     "uuid": "^9.0.1",
     "dotenv": "^16.3.1",
-    "compression": "^1.7.4"
+    "compression": "^1.7.4",
+    "stripe": "^14.25.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"

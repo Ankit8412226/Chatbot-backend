@@ -4,17 +4,18 @@ export const loadEnv = () => {
   dotenv.config();
 
   // Validate required environment variables
-  const required = [
-    'MONGO_URI',
-    'JWT_SECRET',
-    'SAMBANOVA_API_KEY'
-  ];
-
-  const missing = required.filter(key => !process.env[key]);
+  const requiredForProd = ['MONGO_URI', 'JWT_SECRET'];
+  const missing = requiredForProd.filter(key => !process.env[key]);
 
   if (missing.length > 0) {
-    console.error('❌ Missing required environment variables:', missing);
-    process.exit(1);
+    if (process.env.NODE_ENV === 'production') {
+      console.error('❌ Missing required environment variables:', missing);
+      process.exit(1);
+    } else {
+      console.warn('⚠️ Missing environment variables (development mode):', missing);
+      // Provide safe defaults for development
+      if (!process.env.JWT_SECRET) process.env.JWT_SECRET = 'dev-secret-change-me';
+    }
   }
 
   console.log('✅ Environment variables loaded');

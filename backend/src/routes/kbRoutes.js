@@ -1,7 +1,7 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
 import { authenticateToken, requireRole } from '../middleware/auth.js';
-import { authenticateApiKey, requirePermission, checkUsageLimit, trackUsage } from '../middleware/tenant.js';
+import { authenticateApiKey, checkUsageLimit, requirePermission } from '../middleware/tenant.js';
 import KBItem from '../models/KBItem.js';
 import embeddingService from '../services/embedding.js';
 
@@ -14,7 +14,7 @@ router.get('/', authenticateToken, async (req, res) => {
     const tenantId = req.tenant._id;
 
     const query = { tenantId, isActive: true };
-    
+
     if (category) {
       query.category = category;
     }
@@ -28,7 +28,7 @@ router.get('/', authenticateToken, async (req, res) => {
     }
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
-    
+
     const [items, total] = await Promise.all([
       KBItem.find(query)
         .sort({ priority: -1, createdAt: -1 })
@@ -70,7 +70,7 @@ router.post('/', authenticateToken, requireRole(['owner', 'admin']), checkUsageL
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Validation failed',
         details: errors.array()
       });
@@ -125,7 +125,7 @@ router.put('/:itemId', authenticateToken, requireRole(['owner', 'admin']), [
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Validation failed',
         details: errors.array()
       });
@@ -136,7 +136,7 @@ router.put('/:itemId', authenticateToken, requireRole(['owner', 'admin']), [
     const tenantId = req.tenant._id;
 
     const kbItem = await KBItem.findOne({ _id: itemId, tenantId });
-    
+
     if (!kbItem) {
       return res.status(404).json({ error: 'Knowledge base item not found' });
     }
@@ -189,7 +189,7 @@ router.delete('/:itemId', authenticateToken, requireRole(['owner', 'admin']), as
     const tenantId = req.tenant._id;
 
     const result = await KBItem.deleteOne({ _id: itemId, tenantId });
-    
+
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'Knowledge base item not found' });
     }
@@ -213,7 +213,7 @@ router.post('/search', authenticateApiKey, requirePermission('kb:read'), [
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Validation failed',
         details: errors.array()
       });
@@ -261,7 +261,7 @@ router.post('/import', authenticateToken, requireRole(['owner', 'admin']), [
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Validation failed',
         details: errors.array()
       });
@@ -273,9 +273,9 @@ router.post('/import', authenticateToken, requireRole(['owner', 'admin']), [
     // Check if import would exceed limits
     const currentCount = req.tenant.usage.knowledgeItems;
     const limit = req.tenant.limits.knowledgeItems;
-    
+
     if (currentCount + items.length > limit) {
-      return res.status(403).json({ 
+      return res.status(403).json({
         error: 'Import would exceed knowledge base limit',
         current: currentCount,
         importing: items.length,
@@ -284,7 +284,7 @@ router.post('/import', authenticateToken, requireRole(['owner', 'admin']), [
     }
 
     const createdItems = [];
-    const errors = [];
+    const importErrors = [];
 
     for (let i = 0; i < items.length; i++) {
       try {
@@ -309,7 +309,7 @@ router.post('/import', authenticateToken, requireRole(['owner', 'admin']), [
         createdItems.push(kbItem);
 
       } catch (itemError) {
-        errors.push({
+        importErrors.push({
           index: i,
           error: itemError.message,
           item: items[i]
@@ -325,9 +325,9 @@ router.post('/import', authenticateToken, requireRole(['owner', 'admin']), [
     res.status(201).json({
       message: 'Knowledge base import completed',
       imported: createdItems.length,
-      errors: errors.length,
+      errors: importErrors.length,
       items: createdItems,
-      importErrors: errors
+      importErrors: importErrors
     });
 
   } catch (error) {

@@ -1,7 +1,7 @@
+import { ArrowRight, Bot, Building, Lock, Mail, User } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { useAuth } from '../lib/auth.js';
-import { Bot, User, Mail, Lock, Building, ArrowRight } from 'lucide-react';
+import { useAuth } from '../lib/auth.jsx';
 
 const Signup = () => {
   const { register, isAuthenticated, loading } = useAuth();
@@ -45,7 +45,7 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     setIsLoading(true);
@@ -57,7 +57,7 @@ const Signup = () => {
       tenantName: formData.tenantName,
       industry: formData.industry
     });
-    
+
     if (!result.success) {
       setIsLoading(false);
     }
@@ -68,7 +68,7 @@ const Signup = () => {
       ...formData,
       [e.target.name]: e.target.value
     });
-    
+
     // Clear error when user starts typing
     if (errors[e.target.name]) {
       setErrors({

@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../lib/auth.js';
-import { chatAPI } from '../lib/api.js';
-import { Users, MessageSquare, Clock, Star, AlertCircle } from 'lucide-react';
+import { AlertCircle, MessageSquare } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import Badge from '../components/Badge.jsx';
+import { chatAPI } from '../lib/api.js';
+import { useAuth } from '../lib/auth.jsx';
 
 const HandoffCenter = () => {
   const { user, isAgent } = useAuth();
@@ -13,7 +13,7 @@ const HandoffCenter = () => {
 
   useEffect(() => {
     loadConversations();
-    
+
     // Set up real-time updates
     const interval = setInterval(loadConversations, 30000); // Refresh every 30 seconds
     return () => clearInterval(interval);
@@ -22,7 +22,7 @@ const HandoffCenter = () => {
   const loadConversations = async () => {
     try {
       const params = {};
-      
+
       if (filter === 'transferred') {
         params.status = 'transferred';
       } else if (filter === 'escalated') {
@@ -57,7 +57,7 @@ const HandoffCenter = () => {
       escalated: 'error',
       ended: 'default'
     };
-    
+
     return <Badge variant={variants[status] || 'default'}>{status}</Badge>;
   };
 
@@ -142,11 +142,11 @@ const HandoffCenter = () => {
                         {getStatusBadge(conversation.status)}
                       </div>
                     </div>
-                    
+
                     <div className="text-sm text-gray-600">
                       {conversation.messageCount} messages
                     </div>
-                    
+
                     <div className="text-xs text-gray-500 mt-1">
                       {new Date(conversation.createdAt).toLocaleString()}
                     </div>
@@ -165,7 +165,7 @@ const HandoffCenter = () => {
           {/* Quick Stats */}
           <div className="card">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Stats</h3>
-            
+
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Active Chats</span>
@@ -173,14 +173,14 @@ const HandoffCenter = () => {
                   {conversations.filter(c => c.status === 'active').length}
                 </span>
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Pending Handoffs</span>
                 <span className="font-medium">
                   {conversations.filter(c => c.status === 'transferred').length}
                 </span>
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Escalated</span>
                 <span className="font-medium">
@@ -194,7 +194,7 @@ const HandoffCenter = () => {
         {/* Conversation Detail */}
         <div className="lg:col-span-2">
           {activeConversation ? (
-            <ConversationDetail 
+            <ConversationDetail
               conversation={activeConversation}
               onTakeConversation={handleTakeConversation}
               onUpdate={loadConversations}
@@ -259,9 +259,9 @@ const ConversationDetail = ({ conversation, onTakeConversation, onUpdate }) => {
   };
 
   const formatTime = (timestamp) => {
-    return new Date(timestamp).toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit' 
+    return new Date(timestamp).toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit'
     });
   };
 

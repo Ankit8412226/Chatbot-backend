@@ -3,6 +3,9 @@ import { body, validationResult } from 'express-validator';
 import { authenticateToken, requireRole } from '../middleware/auth.js';
 import Tenant from '../models/Tenant.js';
 import User from '../models/User.js';
+import Stripe from 'stripe';
+import { config } from '../config/env.js';
+import { requireActiveSubscription } from '../middleware/tenant.js';
 
 const router = express.Router();
 
@@ -229,3 +232,60 @@ router.post('/team', authenticateToken, requireRole(['owner', 'admin']), [
 });
 
 export default router;
+ 
+// Billing: create checkout session (Stripe)
+router.post('/billing/create-checkout-session', authenticateToken, requireRole(['owner']), async (req, res) => {
+  try {
+    const { plan = 'starter', successUrl, cancelUrl } = req.body;
+
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return res.json({ url: `${config.server.frontendUrl}/dashboard?checkout=stub&plan=${plan}` });
+    }
+
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    let customerId = req.tenant.subscription?.stripeCustomerId;
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        name: req.tenant.name,
+        metadata: { tenantId: String(req.tenant._id) }
+      });
+      customerId = customer.id;
+      req.tenant.subscription = req.tenant.subscription || {};
+      req.tenant.subscription.stripeCustomerId = customerId;
+      await req.tenant.save();
+    }
+
+    const priceMap = {
+      starter: process.env.STRIPE_PRICE_STARTER,
+      professional: process.env.STRIPE_PRICE_PROFESSIONAL,
+      enterprise: process.env.STRIPE_PRICE_ENTERPRISE
+    };
+    const price = priceMap[plan];
+    if (!price) return res.status(400).json({ error: 'Invalid plan' });
+
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      customer: customerId,
+      line_items: [{ price, quantity: 1 }],
+      success_url: successUrl || `${config.server.frontendUrl}/dashboard?checkout=success`,
+      cancel_url: cancelUrl || `${config.server.frontendUrl}/dashboard?checkout=cancel`,
+      metadata: { tenantId: String(req.tenant._id), plan }
+    });
+
+    res.json({ url: session.url });
+  } catch (error) {
+    console.error('Create checkout session error:', error);
+    res.status(500).json({ error: 'Failed to create checkout session' });
+  }
+});
+
+// Billing: get subscription status
+router.get('/billing/subscription', authenticateToken, requireRole(['owner', 'admin']), async (req, res) => {
+  const sub = req.tenant.subscription || { plan: 'free', status: 'active' };
+  res.json({ subscription: sub });
+});
+
+// Example protected route requiring active subscription
+router.get('/protected/usage', authenticateToken, requireActiveSubscription(), async (req, res) => {
+  res.json({ usage: req.tenant.usage, limits: req.tenant.limits });
+});

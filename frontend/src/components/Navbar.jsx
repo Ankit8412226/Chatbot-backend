@@ -1,18 +1,16 @@
+import {
+    BookOpen,
+    Bot,
+    Key,
+    LayoutDashboard,
+    LogOut,
+    MessageSquare,
+    Settings,
+    Users
+} from 'lucide-react';
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../lib/auth.js';
-import { 
-  Bot, 
-  LayoutDashboard, 
-  Key, 
-  BookOpen, 
-  Settings, 
-  MessageSquare, 
-  Users,
-  Menu,
-  X,
-  LogOut
-} from 'lucide-react';
+import { useAuth } from '../lib/auth.jsx';
 
 const Navbar = () => {
   const { user, tenant, logout } = useAuth();
@@ -92,7 +90,7 @@ const Navbar = () => {
                     <div className="text-sm font-medium text-gray-900">{user?.name}</div>
                     <div className="text-xs text-gray-500">{user?.email}</div>
                   </div>
-                  
+
                   {/* Mobile navigation */}
                   <div className="md:hidden">
                     {navigation.map((item) => {

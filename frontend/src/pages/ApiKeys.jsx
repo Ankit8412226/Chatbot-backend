@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../lib/auth.js';
-import { apiKeyAPI } from '../lib/api.js';
-import { Plus, Key, Trash2, Edit, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Key, Plus, Trash2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import Badge from '../components/Badge.jsx';
 import CopyField from '../components/CopyField.jsx';
-import toast from 'react-hot-toast';
+import { apiKeyAPI } from '../lib/api.js';
+import { useAuth } from '../lib/auth.jsx';
 
 const ApiKeys = () => {
   const { user, isAdmin } = useAuth();
@@ -34,13 +34,13 @@ const ApiKeys = () => {
 
   const handleCreateKey = async (e) => {
     e.preventDefault();
-    
+
     try {
       const response = await apiKeyAPI.create(newKey);
-      
+
       // Show the new key in a modal or alert
       const keyValue = response.data.apiKey.key;
-      
+
       // Create a temporary element to show the full key
       const modal = document.createElement('div');
       modal.innerHTML = `
@@ -54,11 +54,11 @@ const ApiKeys = () => {
               ${keyValue}
             </div>
             <div class="flex space-x-3 mt-4">
-              <button onclick="navigator.clipboard.writeText('${keyValue}'); this.textContent='Copied!'" 
+              <button onclick="navigator.clipboard.writeText('${keyValue}'); this.textContent='Copied!'"
                       class="flex-1 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
                 Copy Key
               </button>
-              <button onclick="this.closest('.fixed').remove()" 
+              <button onclick="this.closest('.fixed').remove()"
                       class="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-400">
                 Close
               </button>
@@ -72,7 +72,7 @@ const ApiKeys = () => {
       setNewKey({ name: '', permissions: ['chat:read', 'chat:write'], expiresIn: null });
       setShowCreateForm(false);
       await loadApiKeys();
-      
+
       toast.success('API key created successfully!');
     } catch (error) {
       console.error('Failed to create API key:', error);
@@ -128,7 +128,7 @@ const ApiKeys = () => {
             Manage API keys for your chatbot integrations
           </p>
         </div>
-        
+
         {isAdmin && (
           <button
             onClick={() => setShowCreateForm(true)}
@@ -145,7 +145,7 @@ const ApiKeys = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
             <h3 className="text-lg font-semibold mb-4">Create New API Key</h3>
-            
+
             <form onSubmit={handleCreateKey} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -261,13 +261,13 @@ const ApiKeys = () => {
                       {apiKey.isActive ? 'Active' : 'Inactive'}
                     </Badge>
                   </div>
-                  
+
                   <CopyField
                     value={apiKey.maskedKey}
                     label="API Key"
                     showValue={false}
                   />
-                  
+
                   <div className="mt-3 flex items-center space-x-4 text-sm text-gray-500">
                     <span>Created: {new Date(apiKey.createdAt).toLocaleDateString()}</span>
                     {apiKey.lastUsed && (
@@ -275,7 +275,7 @@ const ApiKeys = () => {
                     )}
                     <span>Usage: {apiKey.usageCount} calls</span>
                   </div>
-                  
+
                   <div className="mt-2">
                     <div className="flex flex-wrap gap-1">
                       {apiKey.permissions.map((permission) => (
@@ -292,15 +292,15 @@ const ApiKeys = () => {
                     <button
                       onClick={() => handleToggleKeyStatus(apiKey.id, apiKey.isActive)}
                       className={`p-2 rounded-lg transition-colors ${
-                        apiKey.isActive 
-                          ? 'text-gray-600 hover:bg-gray-100' 
+                        apiKey.isActive
+                          ? 'text-gray-600 hover:bg-gray-100'
                           : 'text-green-600 hover:bg-green-50'
                       }`}
                       title={apiKey.isActive ? 'Deactivate' : 'Activate'}
                     >
                       {apiKey.isActive ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
-                    
+
                     <button
                       onClick={() => handleDeleteKey(apiKey.id)}
                       className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
@@ -319,7 +319,7 @@ const ApiKeys = () => {
       {/* Integration Guide */}
       <div className="mt-8 card">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Integration Guide</h3>
-        
+
         <div className="space-y-4">
           <div>
             <h4 className="font-medium text-gray-900 mb-2">JavaScript Widget</h4>

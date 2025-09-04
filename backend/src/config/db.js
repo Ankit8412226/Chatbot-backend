@@ -3,6 +3,10 @@ import { config } from './env.js';
 
 export const connectDB = async () => {
   try {
+    if (!config.mongodb.uri) {
+      console.warn('⚠️ No MONGO_URI provided. Skipping MongoDB connection (development mode).');
+      return;
+    }
     const conn = await mongoose.connect(config.mongodb.uri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,

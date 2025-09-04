@@ -18,7 +18,7 @@ class LLMProvider {
 
       // Prepare messages array
       const formattedMessages = [];
-      
+
       if (systemPrompt) {
         formattedMessages.push({
           role: 'system',
@@ -28,6 +28,16 @@ class LLMProvider {
 
       // Add conversation history
       formattedMessages.push(...messages);
+
+      // If no API key in development, return a stub response
+      if (!this.apiKey) {
+        return {
+          content: '[stubbed LLM response] ' + (messages[messages.length - 1]?.content || ''),
+          usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 },
+          model,
+          finishReason: 'stop'
+        };
+      }
 
       const response = await fetch(`${this.baseUrl}/chat/completions`, {
         method: 'POST',
@@ -50,7 +60,7 @@ class LLMProvider {
       }
 
       const data = await response.json();
-      
+
       return {
         content: data.choices[0].message.content,
         usage: data.usage,
@@ -68,10 +78,10 @@ class LLMProvider {
       // For now, return a simple hash-based embedding
       // In production, use a proper embedding model
       const hash = this.simpleHash(text);
-      const embedding = new Array(384).fill(0).map((_, i) => 
+      const embedding = new Array(384).fill(0).map((_, i) =>
         Math.sin(hash + i) * 0.1
       );
-      
+
       return embedding;
     } catch (error) {
       console.error('Embedding generation error:', error);
@@ -94,7 +104,7 @@ class LLMProvider {
       const response = await this.generateResponse([
         { role: 'user', content: 'Hello, this is a test message.' }
       ], { maxTokens: 50 });
-      
+
       return {
         success: true,
         model: response.model,

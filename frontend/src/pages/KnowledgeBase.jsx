@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../lib/auth.js';
-import { kbAPI } from '../lib/api.js';
-import { Plus, BookOpen, Search, Edit, Trash2, Upload, Download } from 'lucide-react';
-import Badge from '../components/Badge.jsx';
+import { BookOpen, Download, Edit, Plus, Search, Trash2, Upload } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import Badge from '../components/Badge.jsx';
+import { kbAPI } from '../lib/api.js';
+import { useAuth } from '../lib/auth.jsx';
 
 const KnowledgeBase = () => {
   const { isAdmin } = useAuth();
@@ -34,7 +34,7 @@ const KnowledgeBase = () => {
         page: pagination.page,
         limit: 20
       };
-      
+
       if (searchTerm) params.search = searchTerm;
       if (selectedCategory) params.category = selectedCategory;
 
@@ -51,13 +51,13 @@ const KnowledgeBase = () => {
 
   const handleCreateItem = async (e) => {
     e.preventDefault();
-    
+
     try {
       await kbAPI.create({
         ...newItem,
         tags: newItem.tags.filter(tag => tag.trim())
       });
-      
+
       setNewItem({
         question: '',
         answer: '',
@@ -75,13 +75,13 @@ const KnowledgeBase = () => {
 
   const handleUpdateItem = async (e) => {
     e.preventDefault();
-    
+
     try {
       await kbAPI.update(editingItem.id, {
         ...editingItem,
         tags: editingItem.tags.filter(tag => tag.trim())
       });
-      
+
       setEditingItem(null);
       await loadKnowledgeBase();
       toast.success('Knowledge item updated successfully!');
@@ -116,7 +116,7 @@ const KnowledgeBase = () => {
     try {
       const text = await file.text();
       const data = JSON.parse(text);
-      
+
       if (!Array.isArray(data)) {
         throw new Error('File must contain an array of knowledge items');
       }
@@ -142,7 +142,7 @@ const KnowledgeBase = () => {
     const blob = new Blob([JSON.stringify(exportData, null, 2)], {
       type: 'application/json'
     });
-    
+
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -176,7 +176,7 @@ const KnowledgeBase = () => {
             Manage your chatbot's knowledge and training data
           </p>
         </div>
-        
+
         {isAdmin && (
           <div className="flex items-center space-x-3">
             <label className="btn-secondary cursor-pointer flex items-center space-x-2">
@@ -189,7 +189,7 @@ const KnowledgeBase = () => {
                 className="hidden"
               />
             </label>
-            
+
             <button
               onClick={handleExport}
               className="btn-secondary flex items-center space-x-2"
@@ -198,7 +198,7 @@ const KnowledgeBase = () => {
               <Download className="h-4 w-4" />
               <span>Export</span>
             </button>
-            
+
             <button
               onClick={() => setShowCreateForm(true)}
               className="btn-primary flex items-center space-x-2"
@@ -225,7 +225,7 @@ const KnowledgeBase = () => {
               />
             </div>
           </div>
-          
+
           <div className="sm:w-48">
             <select
               value={selectedCategory}
@@ -250,7 +250,7 @@ const KnowledgeBase = () => {
             <h3 className="text-lg font-semibold mb-4">
               {editingItem ? 'Edit Knowledge Item' : 'Create New Knowledge Item'}
             </h3>
-            
+
             <form onSubmit={editingItem ? handleUpdateItem : handleCreateItem} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -403,9 +403,9 @@ const KnowledgeBase = () => {
                       <Badge variant="warning" size="xs">Priority: {item.priority}</Badge>
                     )}
                   </div>
-                  
+
                   <p className="text-gray-700 mb-3">{item.answer}</p>
-                  
+
                   {item.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1 mb-3">
                       {item.tags.map((tag, index) => (
@@ -415,7 +415,7 @@ const KnowledgeBase = () => {
                       ))}
                     </div>
                   )}
-                  
+
                   <div className="flex items-center space-x-4 text-sm text-gray-500">
                     <span>Used: {item.usage?.timesUsed || 0} times</span>
                     {item.usage?.avgRating > 0 && (
@@ -434,7 +434,7 @@ const KnowledgeBase = () => {
                     >
                       <Edit className="h-4 w-4" />
                     </button>
-                    
+
                     <button
                       onClick={() => handleDeleteItem(item._id)}
                       className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
@@ -461,11 +461,11 @@ const KnowledgeBase = () => {
             >
               Previous
             </button>
-            
+
             <span className="px-4 py-2 text-sm text-gray-700">
               Page {pagination.page} of {pagination.pages}
             </span>
-            
+
             <button
               onClick={() => setPagination(prev => ({ ...prev, page: Math.min(prev.pages, prev.page + 1) }))}
               disabled={pagination.page === pagination.pages}

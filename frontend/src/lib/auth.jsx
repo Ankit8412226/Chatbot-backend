@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { authAPI } from './api.js';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { authAPI } from './api.js';
 
 const AuthContext = createContext();
 
@@ -48,10 +48,10 @@ export const AuthProvider = ({ children }) => {
 
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
-      
+
       setUser(user);
       setTenant(tenant);
-      
+
       toast.success(`Welcome back, ${user.name}!`);
       return { success: true };
     } catch (error) {
@@ -68,10 +68,10 @@ export const AuthProvider = ({ children }) => {
 
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
-      
+
       setUser(user);
       setTenant(tenant);
-      
+
       toast.success(`Welcome to ChatBot SaaS, ${user.name}!`);
       return { success: true };
     } catch (error) {
@@ -138,3 +138,5 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
+

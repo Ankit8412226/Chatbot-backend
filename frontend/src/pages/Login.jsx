@@ -1,7 +1,7 @@
+import { ArrowRight, Bot, Lock, Mail } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link, Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../lib/auth.js';
-import { Bot, Mail, Lock, ArrowRight } from 'lucide-react';
+import { useAuth } from '../lib/auth.jsx';
 
 const Login = () => {
   const { login, isAuthenticated, loading } = useAuth();
@@ -31,7 +31,7 @@ const Login = () => {
     setIsLoading(true);
 
     const result = await login(formData.email, formData.password);
-    
+
     if (!result.success) {
       setIsLoading(false);
     }

@@ -1,17 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../lib/auth.js';
-import { tenantAPI, chatAPI } from '../lib/api.js';
-import { 
-  MessageSquare, 
-  Key, 
-  BookOpen, 
-  Users, 
-  TrendingUp,
-  Activity,
-  Clock,
-  Star
+import {
+    Activity,
+    BookOpen,
+    Clock,
+    Key,
+    MessageSquare,
+    Star,
+    TrendingUp
 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import Badge from '../components/Badge.jsx';
+import { chatAPI, tenantAPI } from '../lib/api.js';
+import { useAuth } from '../lib/auth.jsx';
 
 const Dashboard = () => {
   const { user, tenant, refreshTenant } = useAuth();
@@ -71,7 +70,7 @@ const Dashboard = () => {
     },
     {
       name: 'Avg. Satisfaction',
-      value: analytics?.conversations?.averageSatisfaction 
+      value: analytics?.conversations?.averageSatisfaction
         ? `${analytics.conversations.averageSatisfaction.toFixed(1)}/5`
         : 'N/A',
       icon: Star,
@@ -80,7 +79,7 @@ const Dashboard = () => {
     },
     {
       name: 'Response Time',
-      value: analytics?.conversations?.avgDuration 
+      value: analytics?.conversations?.avgDuration
         ? `${Math.round(analytics.conversations.avgDuration / 60)}m`
         : 'N/A',
       icon: Clock,
@@ -136,7 +135,7 @@ const Dashboard = () => {
         <div className="lg:col-span-2">
           <div className="card">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Usage Overview</h3>
-            
+
             <div className="space-y-4">
               {/* Conversations */}
               <div>
@@ -147,10 +146,10 @@ const Dashboard = () => {
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
+                  <div
                     className="bg-primary-600 h-2 rounded-full transition-all duration-300"
-                    style={{ 
-                      width: `${Math.min(100, usagePercentage(tenant?.usage?.conversations, tenant?.limits?.conversations))}%` 
+                    style={{
+                      width: `${Math.min(100, usagePercentage(tenant?.usage?.conversations, tenant?.limits?.conversations))}%`
                     }}
                   ></div>
                 </div>
@@ -165,10 +164,10 @@ const Dashboard = () => {
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
+                  <div
                     className="bg-green-600 h-2 rounded-full transition-all duration-300"
-                    style={{ 
-                      width: `${Math.min(100, usagePercentage(tenant?.usage?.apiCalls, tenant?.limits?.apiCalls))}%` 
+                    style={{
+                      width: `${Math.min(100, usagePercentage(tenant?.usage?.apiCalls, tenant?.limits?.apiCalls))}%`
                     }}
                   ></div>
                 </div>
@@ -183,10 +182,10 @@ const Dashboard = () => {
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
+                  <div
                     className="bg-purple-600 h-2 rounded-full transition-all duration-300"
-                    style={{ 
-                      width: `${Math.min(100, usagePercentage(tenant?.usage?.knowledgeItems, tenant?.limits?.knowledgeItems))}%` 
+                    style={{
+                      width: `${Math.min(100, usagePercentage(tenant?.usage?.knowledgeItems, tenant?.limits?.knowledgeItems))}%`
                     }}
                   ></div>
                 </div>
@@ -212,7 +211,7 @@ const Dashboard = () => {
         <div>
           <div className="card">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Conversations</h3>
-            
+
             {conversations.length === 0 ? (
               <div className="text-center py-8">
                 <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -229,7 +228,7 @@ const Dashboard = () => {
                       <span className="text-sm font-medium text-gray-900">
                         {conversation.visitor?.name || 'Anonymous'}
                       </span>
-                      <Badge 
+                      <Badge
                         variant={
                           conversation.status === 'active' ? 'success' :
                           conversation.status === 'transferred' ? 'warning' : 'default'

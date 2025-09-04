@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../lib/auth.js';
-import { apiKeyAPI } from '../lib/api.js';
-import { MessageSquare, Send, RotateCcw, Settings } from 'lucide-react';
-import ChatWidget from '../components/ChatWidget.jsx';
+import { MessageSquare, RotateCcw } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import ChatWidget from '../components/ChatWidget.jsx';
+import { apiKeyAPI } from '../lib/api.js';
+import { useAuth } from '../lib/auth.jsx';
 
 const ChatTester = () => {
   const { tenant } = useAuth();
@@ -26,11 +26,11 @@ const ChatTester = () => {
   const loadApiKeys = async () => {
     try {
       const response = await apiKeyAPI.getAll();
-      const activeKeys = response.data.apiKeys.filter(key => 
+      const activeKeys = response.data.apiKeys.filter(key =>
         key.isActive && key.permissions.includes('chat:write')
       );
       setApiKeys(activeKeys);
-      
+
       if (activeKeys.length > 0 && !selectedApiKey) {
         setSelectedApiKey(activeKeys[0].maskedKey);
       }
@@ -78,7 +78,7 @@ const ChatTester = () => {
             Test your chatbot configuration and responses
           </p>
         </div>
-        
+
         <button
           onClick={resetChat}
           className="btn-secondary flex items-center space-x-2"
@@ -94,7 +94,7 @@ const ChatTester = () => {
           {/* API Key Selection */}
           <div className="card">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Configuration</h3>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -112,7 +112,7 @@ const ChatTester = () => {
                     </option>
                   ))}
                 </select>
-                
+
                 {apiKeys.length === 0 && (
                   <p className="mt-2 text-sm text-red-600">
                     No active API keys found. Create one in the API Keys section.
@@ -155,7 +155,7 @@ const ChatTester = () => {
           {/* Test Scenarios */}
           <div className="card">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Test Scenarios</h3>
-            
+
             <div className="space-y-2">
               {testScenarios.map((scenario, index) => (
                 <button
@@ -176,7 +176,7 @@ const ChatTester = () => {
           {/* Current Settings */}
           <div className="card">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Current Settings</h3>
-            
+
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Model:</span>
@@ -204,7 +204,7 @@ const ChatTester = () => {
         <div className="lg:col-span-2">
           <div className="card h-[600px] relative">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Live Chat Test</h3>
-            
+
             {selectedApiKey ? (
               <div className="absolute inset-6 top-16">
                 <ChatWidget
@@ -233,7 +233,7 @@ const ChatTester = () => {
       {/* Testing Tips */}
       <div className="mt-8 card">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Testing Tips</h3>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <h4 className="font-medium text-gray-900 mb-2">What to Test</h4>
@@ -245,7 +245,7 @@ const ChatTester = () => {
               <li>• Mobile responsiveness</li>
             </ul>
           </div>
-          
+
           <div>
             <h4 className="font-medium text-gray-900 mb-2">Best Practices</h4>
             <ul className="text-sm text-gray-600 space-y-1">
