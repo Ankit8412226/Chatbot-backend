@@ -24,13 +24,27 @@ loadEnv();
 const app = express();
 const server = createServer(app);
 
-// Initialize Socket.IO
+// CORS configuration
+app.use(cors({
+  origin: process.env.FRONTEND_URL?.split(",") || [
+    "http://localhost:5173",
+    "https://www.suhtech.shop"
+  ],
+  credentials: true
+}));
+
+// Socket.IO config
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: process.env.FRONTEND_URL?.split(",") || [
+      "http://localhost:5173",
+      "https://www.suhtech.shop"
+    ],
     methods: ["GET", "POST"]
   }
 });
+
+
 
 // Connect to MongoDB
 connectDB();
@@ -40,10 +54,7 @@ app.use(helmet());
 app.use(compression());
 
 // CORS configuration
-app.use(cors({
-  origin: process.env.FRONTEND_URL || "http://localhost:5173",
-  credentials: true
-}));
+
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
